@@ -1,0 +1,78 @@
+{
+  "name": "@hypernym/bundler",
+  "version": "0.1.0",
+  "author": "Hypernym Studio",
+  "description": "ESM & TS module bundler.",
+  "license": "MIT",
+  "repository": "hypernym-studio/bundler",
+  "homepage": "https://github.com/hypernym-studio/bundler",
+  "funding": "https://github.com/sponsors/ivodolenc",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "module",
+    "javascript",
+    "typescript",
+    "bundler",
+    "builder",
+    "package",
+    "bundle",
+    "types",
+    "build",
+    "esm",
+    "dts"
+  ],
+  "bin": {
+    "hyperbuild": "./dist/cli/index.mjs"
+  },
+  "scripts": {
+    "build": "tsx src/cli/index.ts",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js .",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint -c .config/eslint.config.js --fix .",
+    "format": "prettier --config .config/prettier.config.js --write .",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@types/node": ">=20.0.0",
+    "typescript": ">=5.0.0 || <=5.1.6"
+  },
+  "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@hypernym/colors": "^1.0.0",
+    "@hypernym/utils": "^2.0.0",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@rollup/plugin-replace": "^5.0.2",
+    "esbuild": "^0.19.3",
+    "rollup": "^3.29.2",
+    "rollup-plugin-dts": "^6.0.2"
+  },
+  "devDependencies": {
+    "@hypernym/eslint-config": "^2.0.0",
+    "@hypernym/prettier-config": "^2.0.0",
+    "@hypernym/tsconfig": "^1.0.1",
+    "@types/node": "^20.6.3",
+    "eslint": "^8.49.0",
+    "prettier": "^3.0.3",
+    "tsx": "^3.12.10",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=v18.0.0"
+  }
+}
