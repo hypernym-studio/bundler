@@ -1,10 +1,12 @@
 export interface BuildStats {
-  time: {
-    start: number
-    end: number
-  }
+  cwd: string
   size: number
-  files: string[]
+  buildTime: number
+  files: {
+    path: string
+    size: number
+    buildTime: number
+  }[]
 }
 
 // Auto-generated
