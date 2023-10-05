@@ -1,5 +1,5 @@
-import { stdout } from 'node:process'
-import { bold, cyan, magenta, dim } from '@hypernym/colors'
+import process, { stdout } from 'node:process'
+import { cyan, magenta, dim } from '@hypernym/colors'
 import { name, version } from '../bin/meta.js'
 
 const cl = console.log
@@ -24,13 +24,13 @@ export const logger = {
   start: (): void => {
     cl()
     log(dim(name), dim(version))
-    log(bold(cyan(name)), `Bundling started...`)
+    log(cyan(name), `Bundling started...`)
     cl()
   },
   exit: (message: string): never => {
     cl()
     log(dim(name), dim(version))
-    log(bold(magenta(name)), message)
+    log(magenta(name), message)
     cl()
     return process.exit(1)
   },

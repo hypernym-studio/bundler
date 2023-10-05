@@ -1,8 +1,9 @@
-import { bold, cyan, red } from '@hypernym/colors'
+import process from 'node:process'
+import { cyan, red } from '@hypernym/colors'
 import { name } from '../bin/meta.js'
 
 export function error(err: any): never {
-  console.log(bold(red(name)), 'Something went wrong...')
+  console.log(red(name), 'Something went wrong...')
   console.error(err)
   return process.exit(1)
 }
