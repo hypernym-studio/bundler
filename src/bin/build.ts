@@ -1,14 +1,16 @@
-import { stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { stat } from 'node:fs/promises'
 import { isObject } from '@hypernym/utils'
 import { rollup } from 'rollup'
+import { getLogFilter } from 'rollup/getLogFilter'
 import _replace from '@rollup/plugin-replace'
 import _json from '@rollup/plugin-json'
 import _resolve from '@rollup/plugin-node-resolve'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
-import { esbuild as esbuildPlugin } from './utils/plugins/esbuild.js'
+import { esbuild as esbuildPlugin } from '../utils/plugins/esbuild.js'
 import type { Plugin } from 'rollup'
-import type { Options, BuildStats } from './types/index.js'
+import type { Options } from '../types/options.js'
+import type { BuildStats, BuildLogs } from '../types/build.js'
 
 const replacePlugin = _replace.default ?? _replace
 const jsonPlugin = _json.default ?? _json
@@ -37,6 +39,7 @@ export async function build(
       const { input, output, plugins, externals, banner, footer } = entry
       const entryStart = Date.now()
 
+      const logFilter = getLogFilter(entry.logFilter || [])
       const defaultPlugins: Plugin[] = [esbuildPlugin(plugins?.esbuild)]
 
       if (plugins?.json) {
@@ -64,10 +67,14 @@ export async function build(
       )
 
       if (!isTypesExt) {
+        const buildLogs: BuildLogs[] = []
         const builder = await rollup({
           input: resolve(cwd, input),
           external: externals || options.externals,
           plugins: defaultPlugins,
+          onLog: (level, log) => {
+            if (logFilter(log)) buildLogs.push({ level, log })
+          },
         })
         await builder.write({
           file: resolve(cwd, output),
@@ -81,12 +88,18 @@ export async function build(
           path: output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
+          format: entry.format || 'esm',
+          logs: buildLogs,
         })
         buildStats.size = buildStats.size + stats.size
       } else {
+        const buildLogs: BuildLogs[] = []
         const builder = await rollup({
           input: resolve(cwd, input),
           plugins: [dtsPlugin(plugins?.dts)],
+          onLog: (level, log) => {
+            if (logFilter(log)) buildLogs.push({ level, log })
+          },
         })
         await builder.write({
           file: resolve(cwd, output),
@@ -100,6 +113,8 @@ export async function build(
           path: output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
+          format: entry.format || 'esm',
+          logs: buildLogs,
         })
         buildStats.size = buildStats.size + stats.size
       }

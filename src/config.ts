@@ -1,4 +1,4 @@
-import type { Options } from './types/index.js'
+import type { Options } from './types/options.js'
 
 export const externals = [
   /^node:/,
