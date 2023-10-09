@@ -8,7 +8,6 @@ export interface EntriesOptions {
   externals?: (string | RegExp)[]
   banner?: OutputOptions['banner']
   footer?: OutputOptions['footer']
-  minify?: boolean
-  tsconfig?: string
   plugins?: BuildPlugins
+  logFilter?: string[]
 }

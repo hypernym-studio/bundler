@@ -1,3 +1,10 @@
+import type { LogLevel, RollupLog } from 'rollup'
+
+export interface BuildLogs {
+  level: LogLevel
+  log: RollupLog
+}
+
 export interface BuildStats {
   cwd: string
   size: number
@@ -6,8 +13,10 @@ export interface BuildStats {
     path: string
     size: number
     buildTime: number
+    format: string
+    logs: BuildLogs[]
   }[]
 }
 
 // Auto-generated
-export * from '../build.js'
+export * from '../bin/build.js'
