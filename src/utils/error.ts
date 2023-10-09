@@ -1,9 +1,10 @@
 import process from 'node:process'
 import { cyan, red } from '@hypernym/colors'
 import { name } from '../bin/meta.js'
+import { log } from '../utils/logger.js'
 
 export function error(err: any): never {
-  console.log(red(name), 'Something went wrong...')
+  log(red(name), 'Something went wrong...')
   console.error(err)
   return process.exit(1)
 }
