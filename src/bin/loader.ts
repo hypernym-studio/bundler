@@ -4,7 +4,8 @@ import { exists } from '@hypernym/utils/node'
 import { build } from 'esbuild'
 import { externals } from '../config.js'
 import { logger, error, errorMessage } from '../utils/index.js'
-import type { Args, Options } from '../types/index.js'
+import type { Options } from '../types/options.js'
+import type { Args } from '../types/args.js'
 
 export async function loadConfig(
   filePath: string,
