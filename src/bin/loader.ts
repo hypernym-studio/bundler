@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { exists } from '@hypernym/utils/node'
 import { cyan } from '@hypernym/colors'
@@ -9,6 +9,7 @@ import type { Options } from '../types/options.js'
 import type { Args } from '../types/args.js'
 
 export async function loadConfig(
+  cwd: string,
   filePath: string,
   defaults: Options,
 ): Promise<Options> {
@@ -21,8 +22,13 @@ export async function loadConfig(
     packages: 'external',
   })
   const code = result.outputFiles[0].text
-  const buffer = Buffer.from(code).toString('base64')
-  const content = await import(`data:text/javascript;base64,${buffer}`)
+
+  const tempDir = resolve(cwd, 'node_modules', '.hypernym', 'bundler')
+  const tempConfig = resolve(tempDir, 'config.mjs')
+  await mkdir(tempDir, { recursive: true })
+  await writeFile(tempConfig, code, 'utf-8')
+
+  const content = await import(tempConfig)
   const config: Options = {
     ...defaults,
     ...content.default,
@@ -51,7 +57,7 @@ export async function createConfigLoader(
   if (args.config) {
     const path = resolve(cwd, args.config)
     const isConfig = await exists(path)
-    if (isConfig) return await loadConfig(path, defaults)
+    if (isConfig) return await loadConfig(cwd, path, defaults)
     else return logger.exit(warnMessage)
   }
 
@@ -61,7 +67,7 @@ export async function createConfigLoader(
   for (const ext of configExts) {
     const path = resolve(cwd, `${configName}${ext}`)
     const isConfig = await exists(path)
-    if (isConfig) return await loadConfig(path, defaults)
+    if (isConfig) return await loadConfig(cwd, path, defaults)
   }
 
   return logger.exit(warnMessage)
