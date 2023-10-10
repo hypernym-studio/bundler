@@ -1,9 +1,10 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { exists } from '@hypernym/utils/node'
+import { cyan } from '@hypernym/colors'
 import { build } from 'esbuild'
 import { externals } from '../config.js'
-import { logger, error, errorMessage } from '../utils/index.js'
+import { logger, error } from '../utils/index.js'
 import type { Options } from '../types/options.js'
 import type { Args } from '../types/args.js'
 
@@ -17,6 +18,7 @@ export async function loadConfig(
     write: false,
     format: 'esm',
     target: 'esnext',
+    packages: 'external',
   })
   const code = result.outputFiles[0].text
   const buffer = Buffer.from(code).toString('base64')
@@ -37,6 +39,10 @@ export async function createConfigLoader(
   const pkg = await readFile(pkgPath, 'utf-8').catch(error)
   const { dependencies } = JSON.parse(pkg)
 
+  const warnMessage = `Missing required configuration. To start bundling, add the ${cyan(
+    `'bundler.config.{js,mjs,ts,mts}'`,
+  )} file to the project's root.`
+
   const defaults: Options = {
     externals: [...Object.keys(dependencies || {}), ...externals],
     entries: [],
@@ -46,11 +52,11 @@ export async function createConfigLoader(
     const path = resolve(cwd, args.config)
     const isConfig = await exists(path)
     if (isConfig) return await loadConfig(path, defaults)
-    else return logger.exit(errorMessage[404])
+    else return logger.exit(warnMessage)
   }
 
   const configName = 'bundler.config'
-  const configExts: string[] = ['.js', '.mjs', '.ts', '.mts']
+  const configExts: string[] = ['.ts', '.js', '.mts', '.mjs']
 
   for (const ext of configExts) {
     const path = resolve(cwd, `${configName}${ext}`)
@@ -58,5 +64,5 @@ export async function createConfigLoader(
     if (isConfig) return await loadConfig(path, defaults)
   }
 
-  return logger.exit(errorMessage[404])
+  return logger.exit(warnMessage)
 }
