@@ -13,15 +13,13 @@ npm i -D @hypernym/bundler
 - Powered by Rollup
 - Allows advanced customization
 - Provides a powerful hooking system
-- Includes JS API for building programmatically
 - Exports fully optimized code
 - Follows modern practice
-- Fully tree-shakeable
 - Super easy to use
 
 ## Quick Start
 
-1. Add the `bundler.config.ts` file to the project's root:
+1. Create a `bundler.config.ts` file at the root of your project:
 
 > **Note**
 > Configuration also accepts `.js`, `.mjs`, `.ts`, `.mts` formats.
@@ -45,33 +43,48 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
+    { input: './src/index.ts' },
+    { types: './src/types/index.ts' },
     {
-      input: './src/index.ts',
-      output: './dist/index.mjs',
-    },
-    {
-      input: './src/types/index.ts',
-      output: './dist/types/index.d.ts',
+      input: './src/utils/index.ts',
+      plugins: {
+        esbuild: { minify: true },
+      },
     },
     // ...
   ],
 })
 ```
 
-3. Build via `hyperbuild` command:
+3. Build via command:
 
 ```sh
-npx hyperbuild
+npx bundler
 ```
 
 ## Options
+
+### outDir
+
+- Type: `string`
+- Default: `dist`
+
+Specifies the output directory for production bundle.
+
+```ts
+// bundler.config.ts
+
+export default defineConfig({
+  outDir: 'output',
+})
+```
 
 ### Custom Config
 
 Set a custom config path via the CLI command:
 
 ```sh
-npx hyperbuild --config my.config.js
+npx bundler --config my.config.js
 ```
 
 ## Community
