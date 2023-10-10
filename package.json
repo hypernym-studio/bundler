@@ -33,7 +33,7 @@
     "dts"
   ],
   "bin": {
-    "bundler": "./dist/bin/index.mjs"
+    "hyperbundler": "./dist/bin/index.mjs"
   },
   "scripts": {
     "build": "tsx src/bin/index.ts",
