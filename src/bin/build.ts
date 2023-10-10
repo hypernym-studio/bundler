@@ -8,7 +8,8 @@ import _json from '@rollup/plugin-json'
 import _resolve from '@rollup/plugin-node-resolve'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
 import { esbuild as esbuildPlugin } from '../utils/plugins/esbuild.js'
-import type { Plugin } from 'rollup'
+import { getOutputPath } from '../utils/index.js'
+import type { Plugin, ModuleFormat } from 'rollup'
 import type { Options } from '../types/options.js'
 import type { BuildStats, BuildLogs } from '../types/build.js'
 
@@ -20,7 +21,7 @@ export async function build(
   cwd: string,
   options: Options,
 ): Promise<BuildStats> {
-  const { hooks } = options
+  const { outDir = 'dist', hooks } = options
 
   let start = 0
   const buildStats: BuildStats = {
@@ -36,38 +37,44 @@ export async function build(
     start = Date.now()
 
     for (const entry of options.entries) {
-      const { input, output, plugins, externals, banner, footer } = entry
       const entryStart = Date.now()
 
       const logFilter = getLogFilter(entry.logFilter || [])
-      const defaultPlugins: Plugin[] = [esbuildPlugin(plugins?.esbuild)]
 
-      if (plugins?.json) {
-        const jsonOptions = isObject(plugins.json) ? plugins.json : undefined
-        defaultPlugins.push(jsonPlugin(jsonOptions))
-      }
+      if ('input' in entry) {
+        const { input, externals, plugins, banner, footer } = entry
 
-      if (plugins?.replace) {
-        defaultPlugins.unshift(
-          replacePlugin({
-            preventAssignment: true,
-            ...plugins.replace,
-          }),
-        )
-      }
-      if (plugins?.resolve) {
-        const resolveOptions = isObject(plugins.resolve)
-          ? plugins.resolve
-          : undefined
-        defaultPlugins.unshift(resolvePlugin(resolveOptions))
-      }
-
-      const isTypesExt = ['.d.ts', '.d.mts', '.d.cts'].some((ext) =>
-        output.endsWith(ext),
-      )
-
-      if (!isTypesExt) {
         const buildLogs: BuildLogs[] = []
+        const _output = getOutputPath(outDir, input)
+        let _format: ModuleFormat = 'esm'
+
+        if (_output.endsWith('.cjs')) _format = 'cjs'
+
+        const output = entry.output || _output
+        const format = entry.format || _format
+
+        const defaultPlugins: Plugin[] = [esbuildPlugin(plugins?.esbuild)]
+
+        if (plugins?.json) {
+          const jsonOptions = isObject(plugins.json) ? plugins.json : undefined
+          defaultPlugins.push(jsonPlugin(jsonOptions))
+        }
+
+        if (plugins?.replace) {
+          defaultPlugins.unshift(
+            replacePlugin({
+              preventAssignment: true,
+              ...plugins.replace,
+            }),
+          )
+        }
+        if (plugins?.resolve) {
+          const resolveOptions = isObject(plugins.resolve)
+            ? plugins.resolve
+            : undefined
+          defaultPlugins.unshift(resolvePlugin(resolveOptions))
+        }
+
         const builder = await rollup({
           input: resolve(cwd, input),
           external: externals || options.externals,
@@ -78,7 +85,7 @@ export async function build(
         })
         await builder.write({
           file: resolve(cwd, output),
-          format: entry.format || 'esm',
+          format,
           banner,
           footer,
         })
@@ -88,14 +95,26 @@ export async function build(
           path: output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
-          format: entry.format || 'esm',
+          format,
           logs: buildLogs,
         })
         buildStats.size = buildStats.size + stats.size
-      } else {
+      }
+
+      if ('types' in entry) {
+        const { types, plugins } = entry
+
         const buildLogs: BuildLogs[] = []
+        const _output = getOutputPath(outDir, types, true)
+        let _format: ModuleFormat = 'esm'
+
+        if (_output.endsWith('.d.cts')) _format = 'cjs'
+
+        const output = entry.output || _output
+        const format = entry.format || _format
+
         const builder = await rollup({
-          input: resolve(cwd, input),
+          input: resolve(cwd, types),
           plugins: [dtsPlugin(plugins?.dts)],
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
@@ -103,9 +122,7 @@ export async function build(
         })
         await builder.write({
           file: resolve(cwd, output),
-          format: entry.format || 'esm',
-          banner,
-          footer,
+          format,
         })
         const stats = await stat(resolve(cwd, output))
 
@@ -113,7 +130,7 @@ export async function build(
           path: output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
-          format: entry.format || 'esm',
+          format,
           logs: buildLogs,
         })
         buildStats.size = buildStats.size + stats.size
