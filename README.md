@@ -59,7 +59,7 @@ export default defineConfig({
 3. Build via command:
 
 ```sh
-npx bundler
+npx hyperbundler
 ```
 
 ## Options
@@ -84,7 +84,7 @@ export default defineConfig({
 Set a custom config path via the CLI command:
 
 ```sh
-npx bundler --config my.config.js
+npx hyperbundler --config my.config.js
 ```
 
 ## Community
