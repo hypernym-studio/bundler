@@ -1,13 +1,23 @@
 import type { OutputOptions } from 'rollup'
 import type { BuildPlugins } from './plugins.js'
 
-export interface EntriesOptions {
-  input: string
-  output: string
+export interface Entries {
+  output?: string
   format?: OutputOptions['format']
   externals?: (string | RegExp)[]
+  logFilter?: string[]
+}
+
+export interface EntriesInput extends Entries {
+  input: string
   banner?: OutputOptions['banner']
   footer?: OutputOptions['footer']
   plugins?: BuildPlugins
-  logFilter?: string[]
 }
+
+export interface EntriesTypes extends Entries {
+  types: string
+  plugins?: Pick<BuildPlugins, 'dts'>
+}
+
+export type EntriesOptions = EntriesInput | EntriesTypes

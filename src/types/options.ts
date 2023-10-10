@@ -9,6 +9,12 @@ export interface Options {
    */
   entries: EntriesOptions[]
   /**
+   * Specifies the output directory for production bundle.
+   *
+   * @default 'dist'
+   */
+  outDir?: string
+  /**
    * Specifies the module IDs, or regular expressions to match module IDs,
    * that should remain external to the bundle.
    *
