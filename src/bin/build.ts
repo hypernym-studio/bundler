@@ -102,7 +102,7 @@ export async function build(
       }
 
       if ('types' in entry) {
-        const { types, plugins } = entry
+        const { types, externals, plugins, banner, footer } = entry
 
         const buildLogs: BuildLogs[] = []
         const _output = getOutputPath(outDir, types, true)
@@ -115,6 +115,7 @@ export async function build(
 
         const builder = await rollup({
           input: resolve(cwd, types),
+          external: externals || options.externals,
           plugins: [dtsPlugin(plugins?.dts)],
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
@@ -123,6 +124,8 @@ export async function build(
         await builder.write({
           file: resolve(cwd, output),
           format,
+          banner,
+          footer,
         })
         const stats = await stat(resolve(cwd, output))
 
