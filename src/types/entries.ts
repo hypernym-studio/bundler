@@ -1,23 +1,74 @@
 import type { OutputOptions } from 'rollup'
 import type { BuildPlugins } from './plugins.js'
 
-export interface Entries {
+export interface Entry {
+  /**
+   * Specifies the path of the transformed module.
+   *
+   * If not specified, matches the `input` path with the appropriate extension.
+   *
+   * @default undefined
+   */
   output?: string
+  /**
+   * Specifies the format of the generated module.
+   *
+   * @default 'esm'
+   */
   format?: OutputOptions['format']
+  /**
+   * Specifies the module IDs, or regular expressions to match module IDs,
+   * that should remain external to the bundle.
+   *
+   * If not specified, infers the IDs from the global `options.externals` option.
+   *
+   * @default undefined
+   */
   externals?: (string | RegExp)[]
+  /**
+   * Specifies the string to be inserted at the beginning of the module.
+   *
+   * @default undefined
+   */
+  banner?: OutputOptions['banner']
+  /**
+   * Specifies the string to be inserted at the end of the module.
+   *
+   * @default undefined
+   */
+  footer?: OutputOptions['footer']
+  /**
+   * Specifies custom filters that will display only certain log messages.
+   *
+   * @default undefined
+   */
   logFilter?: string[]
 }
 
-export interface EntriesInput extends Entries {
+export interface EntryInput extends Entry {
+  /**
+   * Specifies the path of the module's build source.
+   */
   input: string
-  banner?: OutputOptions['banner']
-  footer?: OutputOptions['footer']
+  /**
+   * Specifies plugin options.
+   *
+   * @default undefined
+   */
   plugins?: BuildPlugins
 }
 
-export interface EntriesTypes extends Entries {
+export interface EntryTypes extends Entry {
+  /**
+   * Specifies the path of the module's build source that contains only TS definitions.
+   */
   types: string
+  /**
+   * Specifies plugin options.
+   *
+   * @default undefined
+   */
   plugins?: Pick<BuildPlugins, 'dts'>
 }
 
-export type EntriesOptions = EntriesInput | EntriesTypes
+export type EntriesOptions = EntryInput | EntryTypes

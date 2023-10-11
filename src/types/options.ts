@@ -18,6 +18,10 @@ export interface Options {
    * Specifies the module IDs, or regular expressions to match module IDs,
    * that should remain external to the bundle.
    *
+   * IDs and regexps from this option are applied globally to all entries.
+   *
+   * Also, it is possible to define externals individually per entry (`entry.externals`).
+   *
    * @default [/^node:/, /^@types/, /^@rollup/, /^@hypernym/, /^rollup/, ...pkg.dependencies]
    */
   externals?: (string | RegExp)[]
