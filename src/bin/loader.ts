@@ -1,6 +1,6 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { exists } from '@hypernym/utils/node'
+import { exists, writeFile } from '@hypernym/utils/fs'
 import { cyan } from '@hypernym/colors'
 import { build } from 'esbuild'
 import { externals } from '../config.js'
@@ -22,12 +22,8 @@ export async function loadConfig(
     packages: 'external',
   })
   const code = result.outputFiles[0].text
-
-  const tempDir = resolve(cwd, 'node_modules', '.hypernym', 'bundler')
-  const tempConfig = resolve(tempDir, 'config.mjs')
-  await mkdir(tempDir, { recursive: true })
+  const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.mjs')
   await writeFile(tempConfig, code, 'utf-8')
-
   const content = await import(tempConfig)
   const config: Options = {
     ...defaults,
