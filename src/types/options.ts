@@ -1,5 +1,5 @@
 import type { EntriesOptions } from './entries.js'
-import type { BuildHooks } from './hooks.js'
+import type { HooksOptions } from './hooks.js'
 
 export interface Options {
   /**
@@ -26,9 +26,9 @@ export interface Options {
    */
   externals?: (string | RegExp)[]
   /**
-   * Provides a powerful hooking system to further expand build mode.
+   * Provides a powerful hooking system to further expand bundling mode.
    *
    * @default undefined
    */
-  hooks?: BuildHooks
+  hooks?: HooksOptions
 }
