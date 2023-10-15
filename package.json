@@ -8,6 +8,7 @@
   "homepage": "https://github.com/hypernym-studio/bundler",
   "funding": "https://github.com/sponsors/ivodolenc",
   "type": "module",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
@@ -55,22 +56,22 @@
     }
   },
   "dependencies": {
-    "@hypernym/args": "^0.2.0",
-    "@hypernym/colors": "^1.0.0",
-    "@hypernym/spinner": "^0.1.0",
-    "@hypernym/utils": "^2.0.2",
+    "@hypernym/args": "^0.2.1",
+    "@hypernym/colors": "^1.0.1",
+    "@hypernym/spinner": "^0.2.0",
+    "@hypernym/utils": "^2.1.0",
     "@rollup/plugin-json": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.3",
     "esbuild": "^0.19.4",
-    "rollup": "^4.0.2",
+    "rollup": "^4.1.1",
     "rollup-plugin-dts": "^6.1.0"
   },
   "devDependencies": {
-    "@hypernym/eslint-config": "^2.0.1",
-    "@hypernym/prettier-config": "^2.0.1",
+    "@hypernym/eslint-config": "^2.0.2",
+    "@hypernym/prettier-config": "^2.0.2",
     "@hypernym/tsconfig": "^1.1.0",
-    "@types/node": "^20.8.4",
+    "@types/node": "^20.8.6",
     "eslint": "^8.51.0",
     "prettier": "^3.0.3",
     "tsx": "^3.13.0",
