@@ -1,38 +1,30 @@
-import process, { stdout } from 'node:process'
+import process from 'node:process'
 import { parse } from 'node:path'
 import { green, cyan, magenta, red, dim } from '@hypernym/colors'
 import { createSpinner } from '@hypernym/spinner'
-import { name, version } from './meta.js'
+import { version } from './meta.js'
 import { build } from './build.js'
-import { cl, log, formatMs, formatBytes } from '../utils/index.js'
+import { cl, logger, formatMs, formatBytes } from '../utils/index.js'
 import type { Options } from '../types/options.js'
 import type { Args } from '../types/args.js'
 
 export async function createBuilder(cwd: string, args: Args, options: Options) {
-  const spinner = createSpinner()
+  const { hooks } = options
 
-  cl()
-  log(dim(name), dim(version))
-  log(cyan(name), `Bundling started...`)
+  if (hooks?.['bundle:start']) await hooks['bundle:start'](options)
+
+  logger.info(version)
+  logger.info(`Bundling started...`)
+
+  const spinner = createSpinner()
   spinner.start({
     message: `Transforming modules ${green('for production...')}`,
   })
 
-  return await build(cwd, options)
+  await build(cwd, options)
     .then((stats) => {
       spinner.stop({
         message: `Modules transformation is ${green('done!')}`,
-        template: (mark, message) => {
-          const temp = `${mark}${message}`
-          const cols = stdout.columns || 80
-          const time = new Date().toLocaleTimeString()
-          const length =
-            // eslint-disable-next-line no-control-regex
-            temp.replace(/\u001b\[.*?m/g, '').length + time.length + 1
-          const repeatLength = cols <= length ? 0 : cols - length
-
-          return temp + ' '.repeat(repeatLength) + dim(time)
-        },
       })
 
       const check = green('✔')
@@ -48,9 +40,9 @@ export async function createBuilder(cwd: string, args: Args, options: Options) {
         ...stats.files.map((v) => formatBytes(v.size).length),
       )
 
-      log(check, `Bundling completed in ${buildTime}`)
-      log(check, `${modules} modules transformed. Total size is ${buildSize}`)
-      log(info, 'Individual stats per module')
+      cl(check, `Bundling completed in ${buildTime}`)
+      cl(check, `${modules} modules transformed. Total size is ${buildSize}`)
+      cl(info, 'Individual stats per module')
 
       for (const file of stats.files) {
         let format = file.format
@@ -68,7 +60,7 @@ export async function createBuilder(cwd: string, args: Args, options: Options) {
           }
         }
 
-        log(
+        cl(
           info,
           dim('├─'),
           dim(path) + cyan(base),
@@ -81,7 +73,7 @@ export async function createBuilder(cwd: string, args: Args, options: Options) {
         )
       }
 
-      log(
+      logger.info(
         check,
         `Bundle is now fully generated and ready ${green('for production!')}`,
       )
@@ -91,9 +83,11 @@ export async function createBuilder(cwd: string, args: Args, options: Options) {
         mark: red('✖'),
         message: `Modules transformation is ${red('interupted!')}`,
       })
-      log(red(name), 'Something went wrong...')
+      logger.error('Something went wrong...')
       console.error(err)
 
       return process.exit(1)
     })
+
+  if (hooks?.['bundle:end']) await hooks['bundle:end'](options)
 }

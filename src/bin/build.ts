@@ -31,7 +31,7 @@ export async function build(
     files: [],
   }
 
-  if (hooks?.['build:before']) await hooks['build:before'](options)
+  if (hooks?.['build:start']) await hooks['build:start'](options, buildStats)
 
   if (options.entries) {
     start = Date.now()
@@ -143,7 +143,7 @@ export async function build(
     buildStats.buildTime = Date.now() - start
   }
 
-  if (hooks?.['build:done']) await hooks['build:done'](options)
+  if (hooks?.['build:end']) await hooks['build:end'](options, buildStats)
 
   return buildStats
 }
