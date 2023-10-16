@@ -1,4 +1,4 @@
-import type { EntriesOptions } from './entries.js'
+import type { EntryOptions } from './entries.js'
 import type { HooksOptions } from './hooks.js'
 
 export interface Options {
@@ -19,7 +19,7 @@ export interface Options {
    * })
    * ```
    */
-  entries: EntriesOptions[]
+  entries: EntryOptions[]
   /**
    * Specifies the output directory for production bundle.
    *
