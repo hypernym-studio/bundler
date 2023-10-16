@@ -1,7 +1,7 @@
 import type { OutputOptions } from 'rollup'
 import type { BuildPlugins } from './plugins.js'
 
-export interface Entry {
+export interface EntryBase {
   /**
    * Specifies the path of the transformed module.
    *
@@ -45,7 +45,7 @@ export interface Entry {
   logFilter?: string[]
 }
 
-export interface EntryInput extends Entry {
+export interface EntryInput extends EntryBase {
   /**
    * Specifies the path of the module's build source.
    */
@@ -58,7 +58,7 @@ export interface EntryInput extends Entry {
   plugins?: BuildPlugins
 }
 
-export interface EntryTypes extends Entry {
+export interface EntryTypes extends EntryBase {
   /**
    * Specifies the path of the module's build source that contains only TS definitions.
    */
@@ -71,4 +71,4 @@ export interface EntryTypes extends Entry {
   plugins?: Pick<BuildPlugins, 'dts'>
 }
 
-export type EntriesOptions = EntryInput | EntryTypes
+export type EntryOptions = EntryInput | EntryTypes

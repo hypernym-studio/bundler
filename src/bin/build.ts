@@ -53,15 +53,15 @@ export async function build(
         const output = entry.output || _output
         const format = entry.format || _format
 
-        const defaultPlugins: Plugin[] = [esbuildPlugin(plugins?.esbuild)]
+        const _plugins: Plugin[] = [esbuildPlugin(plugins?.esbuild)]
 
         if (plugins?.json) {
           const jsonOptions = isObject(plugins.json) ? plugins.json : undefined
-          defaultPlugins.push(jsonPlugin(jsonOptions))
+          _plugins.push(jsonPlugin(jsonOptions))
         }
 
         if (plugins?.replace) {
-          defaultPlugins.unshift(
+          _plugins.unshift(
             replacePlugin({
               preventAssignment: true,
               ...plugins.replace,
@@ -72,13 +72,22 @@ export async function build(
           const resolveOptions = isObject(plugins.resolve)
             ? plugins.resolve
             : undefined
-          defaultPlugins.unshift(resolvePlugin(resolveOptions))
+          _plugins.unshift(resolvePlugin(resolveOptions))
+        }
+
+        if (hooks?.['rollup:plugins']) {
+          hooks['rollup:plugins'](_plugins, {
+            ...entry,
+            input,
+            output,
+            format,
+          })
         }
 
         const builder = await rollup({
           input: resolve(cwd, input),
           external: externals || options.externals,
-          plugins: defaultPlugins,
+          plugins: _plugins,
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
           },
@@ -113,10 +122,21 @@ export async function build(
         const output = entry.output || _output
         const format = entry.format || _format
 
+        const _plugins = [dtsPlugin(plugins?.dts)]
+
+        if (hooks?.['rollup:plugins']) {
+          hooks['rollup:plugins'](_plugins, {
+            ...entry,
+            types,
+            output,
+            format,
+          })
+        }
+
         const builder = await rollup({
           input: resolve(cwd, types),
           external: externals || options.externals,
-          plugins: [dtsPlugin(plugins?.dts)],
+          plugins: _plugins,
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
           },
