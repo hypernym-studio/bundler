@@ -6,6 +6,18 @@ export interface Options {
    * Specifies the bundle's entry points.
    *
    * It allows you to manually set all build entries and adjust options for each one individually.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     { input: './src/index.ts' }, // => './dist/index.mjs'
+   *     { types: './src/types.ts' }, // => './dist/types.d.ts'
+   *     // ...
+   *   ]
+   * })
+   * ```
    */
   entries: EntriesOptions[]
   /**
@@ -27,6 +39,18 @@ export interface Options {
   externals?: (string | RegExp)[]
   /**
    * Provides a powerful hooking system to further expand bundling mode.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   hooks: {
+   *     'build:end': async (options, buildStats) => {
+   *       // ...
+   *     }
+   *   }
+   * })
+   * ```
    *
    * @default undefined
    */
