@@ -4,7 +4,7 @@ import type { RollupNodeResolveOptions } from '@rollup/plugin-node-resolve'
 import type { TransformOptions as EsbuildOptions } from 'esbuild'
 import type { Options as DtsOptions } from 'rollup-plugin-dts'
 
-export interface BuildPlugins {
+export interface PluginsOptions {
   esbuild?: EsbuildOptions
   dts?: DtsOptions
   resolve?: RollupNodeResolveOptions | true
