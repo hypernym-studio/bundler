@@ -42,121 +42,145 @@ export async function build(
       const logFilter = getLogFilter(entry.logFilter || [])
 
       if ('input' in entry) {
-        const { input, externals, plugins, banner, footer } = entry
-
-        const buildLogs: BuildLogs[] = []
-        const _output = getOutputPath(outDir, input)
+        const _output = getOutputPath(outDir, entry.input)
         let _format: ModuleFormat = 'esm'
-
         if (_output.endsWith('.cjs')) _format = 'cjs'
 
-        const output = entry.output || _output
-        const format = entry.format || _format
-
-        const _plugins: Plugin[] = [esbuildPlugin(plugins?.esbuild)]
-
-        if (plugins?.json) {
-          const jsonOptions = isObject(plugins.json) ? plugins.json : undefined
-          _plugins.push(jsonPlugin(jsonOptions))
+        const buildLogs: BuildLogs[] = []
+        const _entry: {
+          input: string
+          output: string
+          externals: typeof entry.externals
+          format: ModuleFormat
+          plugins: Plugin[]
+          pluginsOptions: typeof entry.plugins
+          banner: typeof entry.banner
+          footer: typeof entry.footer
+        } = {
+          input: entry.input,
+          output: entry.output || _output,
+          externals: entry.externals || options.externals,
+          format: entry.format || _format,
+          plugins: [esbuildPlugin(entry.plugins?.esbuild)],
+          pluginsOptions: entry.plugins,
+          banner: entry.banner,
+          footer: entry.footer,
         }
 
-        if (plugins?.replace) {
-          _plugins.unshift(
+        if (_entry.pluginsOptions?.json) {
+          const jsonOptions = isObject(_entry.pluginsOptions.json)
+            ? _entry.pluginsOptions.json
+            : undefined
+          _entry.plugins.push(jsonPlugin(jsonOptions))
+        }
+
+        if (_entry.pluginsOptions?.replace) {
+          _entry.plugins.unshift(
             replacePlugin({
               preventAssignment: true,
-              ...plugins.replace,
+              ..._entry.pluginsOptions.replace,
             }),
           )
         }
-        if (plugins?.resolve) {
-          const resolveOptions = isObject(plugins.resolve)
-            ? plugins.resolve
+        if (_entry.pluginsOptions?.resolve) {
+          const resolveOptions = isObject(_entry.pluginsOptions.resolve)
+            ? _entry.pluginsOptions.resolve
             : undefined
-          _plugins.unshift(resolvePlugin(resolveOptions))
+          _entry.plugins.unshift(resolvePlugin(resolveOptions))
         }
 
-        if (hooks?.['rollup:plugins']) {
-          hooks['rollup:plugins'](_plugins, {
-            ...entry,
-            input,
-            output,
-            format,
-          })
+        if (hooks?.['build:entry:start']) {
+          await hooks['build:entry:start'](_entry, buildStats)
         }
 
-        const builder = await rollup({
-          input: resolve(cwd, input),
-          external: externals || options.externals,
-          plugins: _plugins,
+        const _build = await rollup({
+          input: resolve(cwd, _entry.input),
+          external: _entry.externals,
+          plugins: _entry.plugins,
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
           },
         })
-        await builder.write({
-          file: resolve(cwd, output),
-          format,
-          banner,
-          footer,
+        await _build.write({
+          file: resolve(cwd, _entry.output),
+          format: _entry.format,
+          banner: _entry.banner,
+          footer: _entry.footer,
         })
-        const stats = await stat(resolve(cwd, output))
+        const stats = await stat(resolve(cwd, _entry.output))
 
         buildStats.files.push({
-          path: output,
+          path: _entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
-          format,
+          format: _entry.format,
           logs: buildLogs,
         })
         buildStats.size = buildStats.size + stats.size
+
+        if (hooks?.['build:entry:end']) {
+          await hooks['build:entry:end'](_entry, buildStats)
+        }
       }
 
       if ('types' in entry) {
-        const { types, externals, plugins, banner, footer } = entry
-
-        const buildLogs: BuildLogs[] = []
-        const _output = getOutputPath(outDir, types, true)
+        const _output = getOutputPath(outDir, entry.types, true)
         let _format: ModuleFormat = 'esm'
-
         if (_output.endsWith('.d.cts')) _format = 'cjs'
 
-        const output = entry.output || _output
-        const format = entry.format || _format
-
-        const _plugins = [dtsPlugin(plugins?.dts)]
-
-        if (hooks?.['rollup:plugins']) {
-          hooks['rollup:plugins'](_plugins, {
-            ...entry,
-            types,
-            output,
-            format,
-          })
+        const buildLogs: BuildLogs[] = []
+        const _entry: {
+          types: string
+          output: string
+          externals: typeof entry.externals
+          format: ModuleFormat
+          plugins: Plugin[]
+          pluginsOptions: typeof entry.plugins
+          banner: typeof entry.banner
+          footer: typeof entry.footer
+        } = {
+          types: entry.types,
+          output: entry.output || _output,
+          externals: entry.externals || options.externals,
+          format: entry.format || _format,
+          plugins: [dtsPlugin(entry.plugins?.dts)],
+          pluginsOptions: entry.plugins,
+          banner: entry.banner,
+          footer: entry.footer,
         }
 
-        const builder = await rollup({
-          input: resolve(cwd, types),
-          external: externals || options.externals,
-          plugins: _plugins,
+        if (hooks?.['build:entry:start']) {
+          await hooks['build:entry:start'](_entry, buildStats)
+        }
+
+        const _build = await rollup({
+          input: resolve(cwd, _entry.types),
+          external: _entry.externals,
+          plugins: _entry.plugins,
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
           },
         })
-        await builder.write({
-          file: resolve(cwd, output),
-          format,
-          banner,
-          footer,
+        await _build.write({
+          file: resolve(cwd, _entry.output),
+          format: _entry.format,
+          banner: _entry.banner,
+          footer: _entry.footer,
         })
-        const stats = await stat(resolve(cwd, output))
+        const stats = await stat(resolve(cwd, _entry.output))
 
         buildStats.files.push({
-          path: output,
+          path: _entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
-          format,
+          format: _entry.format,
           logs: buildLogs,
         })
         buildStats.size = buildStats.size + stats.size
+
+        if (hooks?.['build:entry:end']) {
+          await hooks['build:entry:end'](_entry, buildStats)
+        }
       }
     }
 

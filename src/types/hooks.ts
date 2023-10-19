@@ -1,11 +1,9 @@
-import type { Plugin } from 'rollup'
 import type { Options } from './options.js'
-import type { BuildStats } from './build.js'
-import type { EntryInput, EntryTypes } from './entries.js'
+import type { BuildStats, BuildEntryOptions } from './build.js'
 
 export interface HooksOptions {
   /**
-   * Called just before bundling started.
+   * Called at the beginning of bundling.
    *
    * @example
    *
@@ -21,16 +19,16 @@ export interface HooksOptions {
    *
    * @default undefined
    */
-  'bundle:start'?: (options?: Options) => void | Promise<void>
+  'bundle:start'?: (options: Options) => void | Promise<void>
   /**
-   * Called just before building started.
+   * Called at the beginning of building.
    *
    * @example
    *
    * ```ts
    * export default defineConfig({
    *   hooks: {
-   *     'build:start': async (options, buildStats) => {
+   *     'build:start': async (options, stats) => {
    *       // ...
    *     }
    *   }
@@ -39,14 +37,11 @@ export interface HooksOptions {
    *
    * @default undefined
    */
-  'build:start'?: (
-    options?: Options,
-    buildStats?: BuildStats,
-  ) => void | Promise<void>
+  'build:start'?: (options: Options, stats: BuildStats) => void | Promise<void>
   /**
-   * Called just before the initialization of the Rollup plugin.
+   * Called on each entry just before the build process.
    *
-   * Provides the ability to add and manipulate custom plugins.
+   * Provides the ability to customize entry options before they are passed to the next phase.
    *
    * @example
    *
@@ -55,17 +50,22 @@ export interface HooksOptions {
    *
    * export default defineConfig({
    *   hooks: {
-   *     'rollup:plugins': (plugins, entry) => {
-   *       // adds a custom plugin before the default bundler plugins
-   *       plugins.unshift(plugin1())
-   *       // adds a custom plugin after the default bundler plugins
-   *       plugins.push(plugin2())
-   *       // adds a custom plugin for a specific entry only
-   *       if (entry?.input?.includes('./src/index.ts')) {
-   *         plugins.push(plugin3())
+   *     'build:entry:start': async (options, stats) => {
+   *       // adds custom plugins for a specific entry only
+   *       if (options.input?.includes('./src/index.ts')) {
+   *         options.plugins = [
+   *           plugin1(), // adds a custom plugin before the default bundler plugins
+   *           ...options.plugins, // list of default bundler plugins
+   *           plugin2(), // adds a custom plugin after the default bundler plugins
+   *         ]
    *       }
-   *       // returns the final list of plugins
-   *       return plugins
+   *       // adds custom plugins for a specific types only
+   *       if (options.types?.includes('./src/types.ts')) {
+   *         options.plugins = [
+   *           ...options.plugins, // list of default bundler plugins
+   *           plugin3(), // adds a custom plugin designed to work only with TS declarations
+   *         ]
+   *       }
    *     }
    *   }
    * })
@@ -73,10 +73,31 @@ export interface HooksOptions {
    *
    * @default undefined
    */
-  'rollup:plugins'?: (
-    plugins: Plugin[],
-    entry?: Partial<EntryInput> & Partial<Omit<EntryTypes, 'plugins'>>,
-  ) => Plugin[]
+  'build:entry:start'?: (
+    options: BuildEntryOptions,
+    stats: BuildStats,
+  ) => void | Promise<void>
+  /**
+   * Called on each entry right after the build process is completed.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   hooks: {
+   *     'build:entry:end': async (options, stats) => {
+   *      // ...
+   *     }
+   *   }
+   * })
+   * ```
+   *
+   * @default undefined
+   */
+  'build:entry:end'?: (
+    options: BuildEntryOptions,
+    stats: BuildStats,
+  ) => void | Promise<void>
   /**
    * Called right after building is complete.
    *
@@ -85,7 +106,7 @@ export interface HooksOptions {
    * ```ts
    * export default defineConfig({
    *   hooks: {
-   *     'build:end': async (options, buildStats) => {
+   *     'build:end': async (options, stats) => {
    *       // ...
    *     }
    *   }
@@ -94,10 +115,7 @@ export interface HooksOptions {
    *
    * @default undefined
    */
-  'build:end'?: (
-    options?: Options,
-    buildStats?: BuildStats,
-  ) => void | Promise<void>
+  'build:end'?: (options: Options, stats: BuildStats) => void | Promise<void>
   /**
    * Called right after bundling is complete.
    *
@@ -115,5 +133,5 @@ export interface HooksOptions {
    *
    * @default undefined
    */
-  'bundle:end'?: (options?: Options) => void | Promise<void>
+  'bundle:end'?: (options: Options) => void | Promise<void>
 }
