@@ -56,7 +56,12 @@ export async function createBuilder(cwd: string, args: Args, options: Options) {
 
         if (file.logs) {
           for (const log of file.logs) {
-            cl(magenta('!'), magenta(log.log.message))
+            cl(
+              magenta('!'),
+              dim('├─'),
+              magenta(`${log.level}:`),
+              magenta(log.log.message),
+            )
           }
         }
 
