@@ -38,6 +38,24 @@ export interface EntryBase {
    */
   footer?: OutputOptions['footer']
   /**
+   * Specifies the code at the beginning that goes inside any _format-specific_ wrapper.
+   *
+   * @default undefined
+   */
+  intro?: OutputOptions['intro']
+  /**
+   * Specifies the code at the end that goes inside any _format-specific_ wrapper.
+   *
+   * @default undefined
+   */
+  outro?: OutputOptions['outro']
+  /**
+   * Maps external module IDs to paths.
+   *
+   * @default undefined
+   */
+  paths?: OutputOptions['paths']
+  /**
    * Specifies custom filters that will display only certain log messages.
    *
    * @default undefined
@@ -56,6 +74,28 @@ export interface EntryInput extends EntryBase {
    * @default undefined
    */
   plugins?: PluginsInput
+  /**
+   * Specifies the global variable name that representing exported bundle.
+   *
+   * Intended for `umd/iife` formats.
+   *
+   * @default undefined
+   */
+  name?: OutputOptions['name']
+  /**
+   * Specifies global _module ID_ and _variable name_ pairs necessary for external imports.
+   *
+   * Intended for `umd/iife` formats.
+   *
+   * @default undefined
+   */
+  globals?: OutputOptions['globals']
+  /**
+   * Specifies whether to extend the global variable defined by the `name` option.
+   *
+   * Intended for `umd/iife` formats.
+   */
+  extend?: OutputOptions['extend']
 }
 
 export interface EntryTypes extends EntryBase {

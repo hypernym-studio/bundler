@@ -56,6 +56,12 @@ export async function build(
           pluginsOptions: typeof entry.plugins
           banner: typeof entry.banner
           footer: typeof entry.footer
+          intro: typeof entry.intro
+          outro: typeof entry.outro
+          paths: typeof entry.paths
+          name: typeof entry.name
+          globals: typeof entry.globals
+          extend: typeof entry.extend
         } = {
           input: entry.input,
           output: entry.output || _output,
@@ -65,6 +71,12 @@ export async function build(
           pluginsOptions: entry.plugins,
           banner: entry.banner,
           footer: entry.footer,
+          intro: entry.intro,
+          outro: entry.outro,
+          paths: entry.paths,
+          name: entry.name,
+          globals: entry.globals,
+          extend: entry.extend,
         }
 
         if (_entry.pluginsOptions?.json) {
@@ -106,6 +118,12 @@ export async function build(
           format: _entry.format,
           banner: _entry.banner,
           footer: _entry.footer,
+          intro: _entry.intro,
+          outro: _entry.outro,
+          paths: _entry.paths,
+          name: _entry.name,
+          globals: _entry.globals,
+          extend: _entry.extend,
         })
         const stats = await stat(resolve(cwd, _entry.output))
 
@@ -138,6 +156,9 @@ export async function build(
           pluginsOptions: typeof entry.plugins
           banner: typeof entry.banner
           footer: typeof entry.footer
+          intro: typeof entry.intro
+          outro: typeof entry.outro
+          paths: typeof entry.paths
         } = {
           types: entry.types,
           output: entry.output || _output,
@@ -147,6 +168,9 @@ export async function build(
           pluginsOptions: entry.plugins,
           banner: entry.banner,
           footer: entry.footer,
+          intro: entry.intro,
+          outro: entry.outro,
+          paths: entry.paths,
         }
 
         if (hooks?.['build:entry:start']) {
@@ -166,6 +190,9 @@ export async function build(
           format: _entry.format,
           banner: _entry.banner,
           footer: _entry.footer,
+          intro: _entry.intro,
+          outro: _entry.outro,
+          paths: _entry.paths,
         })
         const stats = await stat(resolve(cwd, _entry.output))
 
