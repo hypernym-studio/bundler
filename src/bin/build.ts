@@ -1,4 +1,5 @@
-import { resolve } from 'node:path'
+import { resolve, parse } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { stat } from 'node:fs/promises'
 import { isObject } from '@hypernym/utils'
 import { rollup } from 'rollup'
@@ -39,7 +40,7 @@ export async function build(
     for (const entry of options.entries) {
       const entryStart = Date.now()
 
-      const logFilter = getLogFilter(entry.logFilter || [])
+      let logFilter = getLogFilter(entry.logFilter || [])
 
       if ('input' in entry) {
         const _output = getOutputPath(outDir, entry.input)
@@ -208,6 +209,54 @@ export async function build(
         if (hooks?.['build:entry:end']) {
           await hooks['build:entry:end'](_entry, buildStats)
         }
+      }
+
+      if ('template' in entry) {
+        logFilter = getLogFilter(entry.logFilter || ['!code:EMPTY_BUNDLE'])
+
+        const _distDir = parse(fileURLToPath(import.meta.url)).dir
+        const _output = entry.output
+        let _format = 'esm'
+        if (_output.endsWith('.cjs')) _format = 'cjs'
+
+        const buildLogs: BuildLogs[] = []
+        const _entry: {
+          template: string
+          output: string
+          content: typeof entry.content
+          plugins: Plugin[]
+          pluginsOptions: typeof entry.plugins
+          format: string
+        } = {
+          template: resolve(_distDir, '_empty.ts'),
+          output: _output,
+          content: entry.content,
+          plugins: [esbuildPlugin(entry.plugins?.esbuild)],
+          pluginsOptions: entry.plugins,
+          format: entry.format || _format,
+        }
+
+        const _build = await rollup({
+          input: _entry.template,
+          plugins: _entry.plugins,
+          onLog: (level, log) => {
+            if (logFilter(log)) buildLogs.push({ level, log })
+          },
+        })
+        await _build.write({
+          file: resolve(cwd, _entry.output),
+          intro: _entry.content,
+        })
+        const stats = await stat(resolve(cwd, _entry.output))
+
+        buildStats.files.push({
+          path: _entry.output,
+          size: stats.size,
+          buildTime: Date.now() - entryStart,
+          format: _entry.format,
+          logs: buildLogs,
+        })
+        buildStats.size = buildStats.size + stats.size
       }
     }
 
