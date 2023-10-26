@@ -111,4 +111,62 @@ export interface EntryTypes extends EntryBase {
   plugins?: PluginsTypes
 }
 
-export type EntryOptions = EntryInput | EntryTypes
+export interface EntryTemplate extends Pick<EntryBase, 'logFilter'> {
+  /**
+   * Specifies the build entry as a module template.
+   *
+   * Provides the ability to dynamically inject template content during the build phase.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     {
+   *       template: true,
+   *       output: './dist/template.ts',
+   *       content: '// TypeScript code...',
+   *     },
+   *   ]
+   * })
+   * ```
+   */
+  template: true
+  /**
+   * Specifies the path of the transformed module template.
+   */
+  output: string
+  /**
+   * Specifies the content of the module template.
+   */
+  content: OutputOptions['intro']
+  /**
+   * Specifies the format of the generated module template.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     {
+   *       template: true,
+   *       output: './dist/template.json',
+   *       content: '{}',
+   *       format: 'json',
+   *     },
+   *   ]
+   * })
+   * ```
+   *
+   * @default 'esm'
+   */
+  format?: string
+  /**
+   * Specifies plugin options.
+   *
+   * @default undefined
+   */
+  plugins?: Pick<PluginsInput, 'esbuild'>
+}
+
+export type EntryOptions = EntryInput | EntryTypes | EntryTemplate
