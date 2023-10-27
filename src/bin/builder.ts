@@ -52,7 +52,6 @@ export async function createBuilder(cwd: string, args: Args, options: Options) {
         if (format.includes('system')) format = 'sys'
         if (format === 'commonjs') format = 'cjs'
         if (format === 'module') format = 'esm'
-        if (base.includes('.d.')) format = 'dts'
 
         if (file.logs) {
           for (const log of file.logs) {

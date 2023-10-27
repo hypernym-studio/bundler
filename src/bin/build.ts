@@ -201,7 +201,7 @@ export async function build(
           path: _entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
-          format: _entry.format,
+          format: 'dts',
           logs: buildLogs,
         })
         buildStats.size = buildStats.size + stats.size
