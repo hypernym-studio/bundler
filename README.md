@@ -21,7 +21,8 @@ npm i -D @hypernym/bundler
 
 1. Create a `bundler.config.ts` file at the root of your project:
 
-> **Note**
+> [!NOTE]
+>
 > Configuration also accepts `.js`, `.mjs`, `.ts`, `.mts` formats.
 
 ```ts
