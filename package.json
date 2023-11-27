@@ -62,20 +62,20 @@
     "@hypernym/utils": "^2.1.0",
     "@rollup/plugin-json": "^6.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.4",
-    "esbuild": "^0.19.5",
-    "rollup": "^4.1.4",
+    "@rollup/plugin-replace": "^5.0.5",
+    "esbuild": "^0.19.8",
+    "rollup": "^4.6.0",
     "rollup-plugin-dts": "^6.1.0"
   },
   "devDependencies": {
-    "@hypernym/eslint-config": "^2.0.2",
-    "@hypernym/prettier-config": "^2.0.2",
+    "@hypernym/eslint-config": "^2.0.3",
+    "@hypernym/prettier-config": "^2.0.3",
     "@hypernym/tsconfig": "^1.1.0",
-    "@types/node": "^20.8.9",
-    "eslint": "^8.52.0",
-    "prettier": "^3.0.3",
-    "tsx": "^3.14.0",
-    "typescript": "^5.2.2"
+    "@types/node": "^20.10.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "tsx": "^4.5.0",
+    "typescript": "^5.3.2"
   },
   "engines": {
     "node": ">=v18.0.0"
