@@ -55,4 +55,22 @@ export interface Options {
    * @default undefined
    */
   hooks?: HooksOptions
+  /**
+   * Specifies global path alias support.
+   *
+   * If true, it enables import prefixes:
+   *
+   * - `@/*`
+   * - `~/*`
+   *
+   * @example
+   *
+   * ```ts
+   * // Imports module from './src/utils/index.js'
+   * import { module } from '@/utils/index.js'
+   * ```
+   *
+   * @default undefined
+   */
+  alias?: true
 }

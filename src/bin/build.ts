@@ -7,16 +7,18 @@ import { getLogFilter } from 'rollup/getLogFilter'
 import _replace from '@rollup/plugin-replace'
 import _json from '@rollup/plugin-json'
 import _resolve from '@rollup/plugin-node-resolve'
+import _alias from '@rollup/plugin-alias'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
-import { esbuild as esbuildPlugin } from '../utils/plugins/esbuild.js'
-import { getOutputPath } from '../utils/index.js'
+import { esbuild as esbuildPlugin } from '@/utils/plugins/esbuild.js'
+import { getOutputPath } from '@/utils/index.js'
 import type { Plugin, ModuleFormat } from 'rollup'
-import type { Options } from '../types/options.js'
-import type { BuildStats, BuildLogs } from '../types/build.js'
+import type { Options } from '@/types/options.js'
+import type { BuildStats, BuildLogs } from '@/types/build.js'
 
 const replacePlugin = _replace.default ?? _replace
 const jsonPlugin = _json.default ?? _json
 const resolvePlugin = _resolve.default ?? _resolve
+const aliasPlugin = _alias.default ?? _alias
 
 export async function build(
   cwd: string,
@@ -36,6 +38,14 @@ export async function build(
 
   if (options.entries) {
     start = Date.now()
+
+    const aliasDir = `${resolve(cwd, './src')}/`
+    const aliasOptions = {
+      entries: [
+        { find: /^@\//, replacement: aliasDir },
+        { find: /^~\//, replacement: aliasDir },
+      ],
+    }
 
     for (const entry of options.entries) {
       const entryStart = Date.now()
@@ -95,11 +105,16 @@ export async function build(
             }),
           )
         }
+
         if (_entry.pluginsOptions?.resolve) {
           const resolveOptions = isObject(_entry.pluginsOptions.resolve)
             ? _entry.pluginsOptions.resolve
             : undefined
           _entry.plugins.unshift(resolvePlugin(resolveOptions))
+        }
+
+        if (options.alias) {
+          _entry.plugins.unshift(aliasPlugin(aliasOptions))
         }
 
         if (hooks?.['build:entry:start']) {
@@ -172,6 +187,10 @@ export async function build(
           intro: entry.intro,
           outro: entry.outro,
           paths: entry.paths,
+        }
+
+        if (options.alias) {
+          _entry.plugins.unshift(aliasPlugin(aliasOptions))
         }
 
         if (hooks?.['build:entry:start']) {

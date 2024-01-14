@@ -4,8 +4,8 @@ import { cwd as _cwd } from 'node:process'
 import { createArgs } from '@hypernym/args'
 import { createConfigLoader } from './loader.js'
 import { createBuilder } from './builder.js'
-import { error } from '../utils/index.js'
-import type { Args } from '../types/args.js'
+import { error } from '@/utils/index.js'
+import type { Args } from '@/types/args.js'
 
 async function main() {
   const cwd = _cwd()

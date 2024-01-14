@@ -259,6 +259,28 @@ export default defineConfig({
 })
 ```
 
+### alias
+
+- Type: `true`
+- Default: `undefined`
+
+Specifies global path alias support.
+
+If true, it enables import prefixes:
+
+- `@/*`
+- `~/*`
+
+```ts
+// Imports module from './src/utils/index.js'
+import { module } from '@/utils/index.js'
+
+// or
+
+// Imports module from './src/utils/index.js'
+import { module } from '~/utils/index.js'
+```
+
 ## CLI
 
 ### Custom Config
@@ -271,11 +293,13 @@ npx hyperbundler --config my.config.js
 
 ## Community
 
-Feel free to use the official [discussions](https://github.com/hypernym-studio/bundler/discussions) for any additional questions.
+Feel free to ask questions or share new ideas.
+
+Use the official [discussions](https://github.com/hypernym-studio/bundler/discussions) to get involved.
 
 ## License
 
-Developed in 🇭🇷 Croatia
+Developed in 🇭🇷 Croatia.
 
 Released under the [MIT](LICENSE.txt) license.
 

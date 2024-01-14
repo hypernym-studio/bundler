@@ -4,9 +4,9 @@ import { green, cyan, magenta, red, dim } from '@hypernym/colors'
 import { createSpinner } from '@hypernym/spinner'
 import { version } from './meta.js'
 import { build } from './build.js'
-import { cl, logger, formatMs, formatBytes } from '../utils/index.js'
-import type { Options } from '../types/options.js'
-import type { Args } from '../types/args.js'
+import { cl, logger, formatMs, formatBytes } from '@/utils/index.js'
+import type { Options } from '@/types/options.js'
+import type { Args } from '@/types/args.js'
 
 export async function createBuilder(cwd: string, args: Args, options: Options) {
   const { hooks } = options
