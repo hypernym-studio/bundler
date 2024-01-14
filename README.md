@@ -272,6 +272,18 @@ If true, it enables import prefixes:
 - `~/*`
 
 ```ts
+// bundler.config.ts
+
+import { defineConfig } from '@hypernym/bundler'
+
+export default defineConfig({
+  alias: true,
+})
+```
+
+After that it can be imported as:
+
+```ts
 // Imports module from './src/utils/index.js'
 import { module } from '@/utils/index.js'
 
