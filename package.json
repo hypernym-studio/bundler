@@ -1,6 +1,6 @@
 {
   "name": "@hypernym/bundler",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "author": "Hypernym Studio",
   "description": "ESM & TS module bundler.",
   "license": "MIT",
@@ -43,6 +43,10 @@
     "format": "prettier --config .config/prettier.config.js --write .",
     "prepublishOnly": "npm run build"
   },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=v18.0.0"
+  },
   "peerDependencies": {
     "@types/node": ">=20.0.0",
     "typescript": ">=5.0.0"
@@ -77,8 +81,5 @@
     "prettier": "^3.2.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
-  },
-  "engines": {
-    "node": ">=v18.0.0"
   }
 }
