@@ -3,6 +3,7 @@ import { defineConfig } from './src/config.js'
 import { name, version } from './package.json'
 
 export default defineConfig({
+  alias: true,
   entries: [
     { input: './src/index.ts' },
     { types: './src/types/index.ts' },
