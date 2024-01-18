@@ -13,6 +13,7 @@ npm i -D @hypernym/bundler
 - Powered by Rollup
 - Allows advanced customization
 - Provides a powerful hooking system
+- Supports all TS module resolutions
 - Exports fully optimized code
 - Follows modern practice
 - Super easy to use
@@ -285,12 +286,12 @@ After that it can be imported as:
 
 ```ts
 // Imports module from './src/utils/index.js'
-import { module } from '@/utils/index.js'
+import { module } from '@/utils'
 
 // or
 
 // Imports module from './src/utils/index.js'
-import { module } from '~/utils/index.js'
+import { module } from '~/utils'
 ```
 
 ## CLI
