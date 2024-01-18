@@ -1,4 +1,4 @@
-import type { Options } from '@/types/options.js'
+import type { Options } from '@/types/options'
 
 /**
  * List of global defaults for externals.

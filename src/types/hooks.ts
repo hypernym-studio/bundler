@@ -1,5 +1,5 @@
-import type { Options } from './options.js'
-import type { BuildStats, BuildEntryOptions } from './build.js'
+import type { Options } from './options'
+import type { BuildStats, BuildEntryOptions } from './build'
 
 export interface HooksOptions {
   /**

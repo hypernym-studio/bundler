@@ -4,21 +4,15 @@ import { stat } from 'node:fs/promises'
 import { isObject } from '@hypernym/utils'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
-import _replace from '@rollup/plugin-replace'
-import _json from '@rollup/plugin-json'
-import _resolve from '@rollup/plugin-node-resolve'
-import _alias from '@rollup/plugin-alias'
+import replacePlugin from '@rollup/plugin-replace'
+import jsonPlugin from '@rollup/plugin-json'
+import resolvePlugin from '@rollup/plugin-node-resolve'
+import aliasPlugin from '@rollup/plugin-alias'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
-import { esbuild as esbuildPlugin } from '@/utils/plugins/esbuild.js'
-import { getOutputPath } from '@/utils/index.js'
+import { esbuild as esbuildPlugin } from '@/utils/plugins/esbuild'
+import { getOutputPath } from '@/utils'
 import type { Plugin, ModuleFormat } from 'rollup'
-import type { Options } from '@/types/options.js'
-import type { BuildStats, BuildLogs } from '@/types/build.js'
-
-const replacePlugin = _replace.default ?? _replace
-const jsonPlugin = _json.default ?? _json
-const resolvePlugin = _resolve.default ?? _resolve
-const aliasPlugin = _alias.default ?? _alias
+import type { Options, BuildStats, BuildLogs } from '@/types'
 
 export async function build(
   cwd: string,

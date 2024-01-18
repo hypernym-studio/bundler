@@ -1,6 +1,6 @@
 import type { Plugin, LogLevel, RollupLog } from 'rollup'
-import type { EntryBase, EntryInput, EntryTypes } from './entries.js'
-import type { PluginsInput, PluginsTypes } from './plugins.js'
+import type { EntryBase, EntryInput, EntryTypes } from './entries'
+import type { PluginsInput, PluginsTypes } from './plugins'
 
 export interface BuildLogs {
   level: LogLevel

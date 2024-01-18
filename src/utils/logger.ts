@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { cyan, magenta, red, dim } from '@hypernym/colors'
-import { name, version } from '@/bin/meta.js'
+import { name, version } from '@/bin/meta'
 
 export const cl = console.log
 
