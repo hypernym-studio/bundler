@@ -1,5 +1,5 @@
-import type { EntryOptions } from './entries.js'
-import type { HooksOptions } from './hooks.js'
+import type { EntryOptions } from './entries'
+import type { HooksOptions } from './hooks'
 
 export interface Options {
   /**

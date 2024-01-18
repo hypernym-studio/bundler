@@ -3,10 +3,10 @@ import { resolve } from 'node:path'
 import { exists, writeFile } from '@hypernym/utils/fs'
 import { cyan } from '@hypernym/colors'
 import { build } from 'esbuild'
-import { externals } from '../config.js'
-import { logger, error } from '@/utils/index.js'
-import type { Options } from '@/types/options.js'
-import type { Args } from '@/types/args.js'
+import { externals } from '../config'
+import { logger, error } from '@/utils/index'
+import type { Options } from '@/types'
+import type { Args } from '@/types/args'
 
 export async function loadConfig(
   cwd: string,

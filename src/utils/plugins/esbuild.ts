@@ -1,18 +1,38 @@
+import { cwd } from 'node:process'
+import { existsSync, statSync } from 'node:fs'
+import { resolve, dirname, join } from 'node:path'
 import { createFilter } from '@rollup/pluginutils'
 import { transform, type TransformOptions } from 'esbuild'
 import type { Plugin } from 'rollup'
 
+function resolvePath(path: string, index = false): string | null {
+  const extensions = ['.js', '.ts', 'jsx', '.tsx']
+  const fileWithoutExt = path.replace(/\.[jt]sx?$/, '')
+  for (const ext of extensions) {
+    const file = index ? join(path, `index${ext}`) : `${fileWithoutExt}${ext}`
+    if (existsSync(file)) return file
+  }
+  return null
+}
+
 export function esbuild(options?: TransformOptions): Plugin {
-  const isJs = /\.(?:[mc]?js|jsx)$/
   const filter = createFilter(/\.([cm]?ts|[jt]sx)$/)
 
   return {
     name: 'esbuild',
 
-    resolveId(id, importer, options) {
-      if (isJs.test(id) && importer) {
-        return this.resolve(id.replace(/js(x?)$/, 'ts$1'), importer, options)
+    resolveId(id, importer) {
+      if (importer) {
+        const resolved = resolve(importer ? dirname(importer) : cwd(), id)
+        let file = resolvePath(resolved)
+
+        if (file) return file
+        if (!file && existsSync(resolved) && statSync(resolved).isDirectory()) {
+          file = resolvePath(resolved, true)
+          if (file) return file
+        }
       }
+
       return null
     },
 
@@ -22,7 +42,7 @@ export function esbuild(options?: TransformOptions): Plugin {
       const result = await transform(code, {
         loader: 'default',
         ...options,
-        sourcefile: id.replace(/\.[cm]ts/, '.ts'),
+        sourcefile: id,
       })
 
       return {

@@ -1,5 +1,5 @@
 import type { OutputOptions } from 'rollup'
-import type { PluginsInput, PluginsTypes } from './plugins.js'
+import type { PluginsInput, PluginsTypes } from './plugins'
 
 export interface EntryBase {
   /**
