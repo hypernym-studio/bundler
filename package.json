@@ -68,18 +68,18 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
-    "esbuild": "^0.19.11",
-    "rollup": "^4.9.5",
+    "esbuild": "^0.20.1",
+    "rollup": "^4.13.0",
     "rollup-plugin-dts": "^6.1.0"
   },
   "devDependencies": {
-    "@hypernym/eslint-config": "^2.0.3",
-    "@hypernym/prettier-config": "^2.0.3",
+    "@hypernym/eslint-config": "^2.0.5",
+    "@hypernym/prettier-config": "^2.0.4",
     "@hypernym/tsconfig": "^1.2.0",
-    "@types/node": "^20.11.5",
-    "eslint": "^8.56.0",
-    "prettier": "^3.2.4",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.11.26",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
   }
 }
