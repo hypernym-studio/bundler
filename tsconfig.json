@@ -2,7 +2,7 @@
   "extends": "@hypernym/tsconfig",
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "Bundler"
   },
-  "include": ["src/**/*", ".config/**/*", "bundler.config.ts"],
+  "include": ["src/**/*", ".config/**/*", "bundler.config.ts"]
 }
