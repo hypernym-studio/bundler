@@ -1,5 +1,5 @@
 import { writeFile } from '@hypernym/utils/fs'
-import { defineConfig } from './src/config.js'
+import { defineConfig } from '@/config'
 import { name, version } from './package.json'
 
 export default defineConfig({
