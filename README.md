@@ -1,4 +1,4 @@
-# Bundler
+# @hypernym/bundler
 
 ESM & TS module bundler.
 
