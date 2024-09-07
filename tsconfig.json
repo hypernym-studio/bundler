@@ -1,8 +1,11 @@
 {
   "extends": "@hypernym/tsconfig",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler"
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["src/**/*", ".config/**/*", "bundler.config.ts"]
+  "include": ["src/**/*", "*.js", "*.ts"],
+  "exclude": ["node_modules"]
 }
