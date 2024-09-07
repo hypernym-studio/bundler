@@ -4,7 +4,7 @@ import { exists, writeFile } from '@hypernym/utils/fs'
 import { cyan } from '@hypernym/colors'
 import { build } from 'esbuild'
 import { externals } from '../config'
-import { logger, error } from '@/utils/index'
+import { logger, error } from '@/utils'
 import type { Options } from '@/types'
 import type { Args } from '@/types/args'
 
