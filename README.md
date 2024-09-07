@@ -5,7 +5,7 @@ ESM & TS module bundler.
 <sub><a href="https://github.com/hypernym-studio/bundler">Repository</a> | <a href="https://www.npmjs.com/package/@hypernym/bundler">Package</a> | <a href="https://github.com/hypernym-studio/bundler/releases">Releases</a> | <a href="https://github.com/hypernym-studio/bundler/discussions">Discussions</a></sub>
 
 ```sh
-npm i -D @hypernym/bundler
+pnpm add -D @hypernym/bundler
 ```
 
 ## Features
@@ -312,8 +312,6 @@ Use the official [discussions](https://github.com/hypernym-studio/bundler/discus
 
 ## License
 
-Developed in 🇭🇷 Croatia.
+Developed in 🇭🇷 Croatia, © Hypernym Studio.
 
 Released under the [MIT](LICENSE.txt) license.
-
-© Hypernym Studio
