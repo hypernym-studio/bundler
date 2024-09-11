@@ -1,16 +1,20 @@
 import { cwd } from 'node:process'
-import { existsSync, statSync } from 'node:fs'
-import { resolve, dirname, join } from 'node:path'
+import { resolve, dirname } from 'node:path'
+import { stat } from 'node:fs/promises'
+import { exists } from '@hypernym/utils/fs'
 import { createFilter } from '@rollup/pluginutils'
 import { transform, type TransformOptions } from 'esbuild'
 import type { Plugin } from 'rollup'
 
-function resolvePath(path: string, index = false): string | null {
+async function resolvePath(
+  path: string,
+  index = false,
+): Promise<string | null> {
   const extensions = ['.js', '.ts', 'jsx', '.tsx']
   const fileWithoutExt = path.replace(/\.[jt]sx?$/, '')
   for (const ext of extensions) {
-    const file = index ? join(path, `index${ext}`) : `${fileWithoutExt}${ext}`
-    if (existsSync(file)) return file
+    const file = index ? `${path}/index${ext}` : `${fileWithoutExt}${ext}`
+    if (await exists(file)) return file
   }
   return null
 }
@@ -21,14 +25,18 @@ export function esbuild(options?: TransformOptions): Plugin {
   return {
     name: 'esbuild',
 
-    resolveId(id, importer) {
+    async resolveId(id, importer) {
       if (importer) {
         const resolved = resolve(importer ? dirname(importer) : cwd(), id)
-        let file = resolvePath(resolved)
+        let file = await resolvePath(resolved)
 
         if (file) return file
-        if (!file && existsSync(resolved) && statSync(resolved).isDirectory()) {
-          file = resolvePath(resolved, true)
+        if (
+          !file &&
+          (await exists(resolved)) &&
+          (await stat(resolved)).isDirectory()
+        ) {
+          file = await resolvePath(resolved, true)
           if (file) return file
         }
       }
