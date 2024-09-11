@@ -19,6 +19,6 @@ export const logger = {
     cl(magenta(name), dim(time), version)
     cl(magenta(name), dim(time), message)
 
-    return process.exit(1)
+    return process.exit()
   },
 }

@@ -4,5 +4,5 @@ import { logger } from './logger'
 export function error(err: any): never {
   logger.error('Something went wrong...')
   console.error(err)
-  return process.exit(1)
+  return process.exit()
 }
