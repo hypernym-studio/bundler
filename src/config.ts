@@ -18,7 +18,7 @@ import type { Options } from '@/types/options'
  * })
  * ```
  */
-export const externals = [
+export const externals: RegExp[] = [
   /^node:/,
   /^@types/,
   /^@rollup/,
