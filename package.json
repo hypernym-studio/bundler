@@ -38,13 +38,13 @@
   },
   "scripts": {
     "build": "bun -b run ./src/bin/index.ts",
-    "lint": "eslint -c .config/eslint.config.js .",
-    "lint:fix": "eslint -c .config/eslint.config.js --fix .",
-    "format": "prettier --config .config/prettier.config.js --write .",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
     "prepublishOnly": "npm run build"
   },
   "sideEffects": false,
-  "packageManager": "pnpm@9.9.0",
+  "packageManager": "pnpm@9.10.0",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
@@ -64,21 +64,20 @@
   "dependencies": {
     "@hypernym/args": "^0.2.1",
     "@hypernym/colors": "^1.0.1",
-    "@hypernym/spinner": "^0.2.0",
-    "@hypernym/utils": "^3.0.0",
+    "@hypernym/utils": "^3.0.1",
     "@rollup/plugin-alias": "^5.1.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.7",
     "@rollup/pluginutils": "^5.1.0",
     "esbuild": "^0.23.1",
-    "rollup": "^4.21.2",
+    "rollup": "^4.21.3",
     "rollup-plugin-dts": "^6.1.1"
   },
   "devDependencies": {
     "@hypernym/eslint-config": "^3.5.0",
     "@hypernym/prettier-config": "^3.2.0",
-    "@hypernym/tsconfig": "^2.2.0",
+    "@hypernym/tsconfig": "^2.3.0",
     "@types/node": "^22.5.4",
     "eslint": "^9.10.0",
     "prettier": "^3.3.3",
