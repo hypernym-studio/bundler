@@ -24,6 +24,7 @@
     "bundling",
     "javascript",
     "typescript",
+    "hyperbundler",
     "bundler",
     "builder",
     "package",
@@ -62,7 +63,7 @@
     }
   },
   "dependencies": {
-    "@hypernym/args": "^0.2.1",
+    "@hypernym/args": "^0.3.0",
     "@hypernym/colors": "^1.0.1",
     "@hypernym/utils": "^3.0.1",
     "@rollup/plugin-alias": "^5.1.0",
@@ -78,7 +79,7 @@
     "@hypernym/eslint-config": "^3.5.0",
     "@hypernym/prettier-config": "^3.2.0",
     "@hypernym/tsconfig": "^2.3.0",
-    "@types/node": "^22.5.4",
+    "@types/node": "^22.5.5",
     "eslint": "^9.10.0",
     "prettier": "^3.3.3",
     "typescript": "^5.5.4"
