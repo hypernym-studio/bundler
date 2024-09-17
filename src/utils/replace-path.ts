@@ -10,7 +10,6 @@
  *   entries: [
  *     {
  *       input: './src/index.ts',
- *       output: './dist/index.mjs',
  *       externals: [/^@\/path/],
  *       // replaces `@/path` with `./path/index.mjs`
  *       paths: (id) => replacePath(/^@\/path/, './easing/index.mjs')(id),

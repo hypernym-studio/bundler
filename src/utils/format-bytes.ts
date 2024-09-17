@@ -1,4 +1,4 @@
-export function formatBytes(bytes: number) {
+export function formatBytes(bytes: number): string {
   const decimals = 2
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
 
