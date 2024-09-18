@@ -1,6 +1,6 @@
 import type { Plugin, LogLevel, RollupLog } from 'rollup'
-import type { EntryBase, EntryInput, EntryTypes } from './entries'
-import type { PluginsInput, PluginsTypes } from './plugins'
+import type { EntryBase } from './entries'
+import type { TransformersChunk, TransformersDeclaration } from './transformers'
 
 export interface BuildLogs {
   level: LogLevel
@@ -47,21 +47,17 @@ export interface BuildStats {
   }[]
 }
 
-export interface BuildEntryOptions
-  extends EntryBase,
-    Partial<Omit<EntryInput, 'plugins'>>,
-    Partial<Omit<EntryTypes, 'plugins'>> {
-  /**
-   * Specifies list of plugins.
-   */
-  plugins: Plugin[]
+export interface BuildEntryOptions extends EntryBase {
   /**
    * Specifies options for default plugins.
    *
    * @default undefined
    */
-  pluginsOptions?: PluginsInput & PluginsTypes
+  transformers?: TransformersChunk & TransformersDeclaration
+  /**
+   * Specifies list of default plugins.
+   */
+  defaultPlugins: Plugin[]
 }
 
-// Auto-generated
-export * from '../bin/build.js'
+export * from '@/bin/build'
