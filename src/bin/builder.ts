@@ -1,97 +1,59 @@
-import process from 'node:process'
-import { parse } from 'node:path'
-import { green, cyan, magenta, red, dim } from '@hypernym/colors'
-import { createSpinner } from '@hypernym/spinner'
-import { version } from './meta'
+import { green, dim, bold } from '@hypernym/colors'
+import { logoname, version } from './meta'
 import { build } from './build'
-import { cl, logger, formatMs, formatBytes } from '@/utils'
-import type { Options } from '@/types/options'
-import type { Args } from '@/types/args'
+import { logger, formatMs, formatBytes, error } from '@/utils'
+import type { ConfigLoader } from '@/types'
 
-export async function createBuilder(cwd: string, args: Args, options: Options) {
+export async function createBuilder(
+  cwd: string,
+  config: ConfigLoader,
+): Promise<void> {
+  const { options, path: configPath } = config
   const { hooks } = options
 
-  if (hooks?.['bundle:start']) await hooks['bundle:start'](options)
+  const cl = console.log
 
-  logger.info(version)
-  logger.info(`Bundling started...`)
+  await hooks?.['bundle:start']?.(options)
+  const line = '─'.repeat(logoname.length + 2)
 
-  const spinner = createSpinner()
-  spinner.start({
-    message: `Transforming modules ${green('for production...')}`,
-  })
+  cl()
+  cl(dim(`┌${line}┐`))
+  cl(dim('│'), `${logoname.toUpperCase()}`, dim('│'), dim(`v${version}`))
+  cl(dim(`└${line}┘`))
+  cl(dim(bold('i')), 'Config', dim(configPath))
+  cl(dim(bold('i')), 'Bundling started...')
+  cl(
+    dim(bold('*')),
+    'Processing',
+    dim(`[${new Date().toLocaleTimeString()}]`),
+    'Transforming files',
+  )
+  cl(dim('│'))
 
   await build(cwd, options)
     .then((stats) => {
-      spinner.stop({
-        message: `Modules transformation is ${green('done!')}`,
-      })
-
-      const check = green('✔')
-      const info = cyan('i')
+      const check = green(bold('✔'))
       const buildTime = green(formatMs(stats.buildTime))
       const buildSize = green(formatBytes(stats.size))
-      const modules = green(stats.files.length)
-      const longestPath = Math.max(...stats.files.map((v) => v.path.length + 1))
-      const longestTime = Math.max(
-        ...stats.files.map((v) => formatMs(v.buildTime).length),
+      const totalModules = stats.files.length
+      const modules =
+        totalModules > 1
+          ? `${green(totalModules)} modules`
+          : `${green(totalModules)} module`
+
+      cl(dim('│'))
+      cl(
+        dim(bold('*')),
+        'Succeeded',
+        dim(`[${new Date().toLocaleTimeString()}]`),
+        'Module transformation is done',
       )
-      const longestSize = Math.max(
-        ...stats.files.map((v) => formatBytes(v.size).length),
-      )
-
-      cl(check, `Bundling completed in ${buildTime}`)
-      cl(check, `${modules} modules transformed. Total size is ${buildSize}`)
-      cl(info, 'Individual stats per module')
-
-      for (const file of stats.files) {
-        let format = file.format
-        const base = parse(file.path).base
-        const path = file.path.replace(base, '')
-
-        if (format.includes('system')) format = 'sys'
-        if (format === 'commonjs') format = 'cjs'
-        if (format === 'module') format = 'esm'
-
-        if (file.logs) {
-          for (const log of file.logs) {
-            cl(
-              magenta('!'),
-              dim('├─'),
-              magenta(`${log.level}:`),
-              magenta(log.log.message),
-            )
-          }
-        }
-
-        cl(
-          info,
-          dim('├─'),
-          dim(path) + cyan(base),
-          ' '.padEnd(longestPath - (path.length + base.length)),
-          dim(format.padStart(5)),
-          dim('│'),
-          dim(formatMs(file.buildTime).padStart(longestTime)),
-          dim('│'),
-          dim(formatBytes(file.size).padStart(longestSize)),
-        )
-      }
-
-      logger.info(
-        check,
-        `Bundle is now fully generated and ready ${green('for production!')}`,
-      )
+      cl(check, `Bundling fully completed in ${buildTime}`)
+      cl(check, `${modules} transformed. Total size is ${buildSize}`)
+      logger.info(`Bundle is generated and ready for production`)
+      cl()
     })
-    .catch((err) => {
-      spinner.stop({
-        mark: red('✖'),
-        message: `Modules transformation is ${red('interupted!')}`,
-      })
-      logger.error('Something went wrong...')
-      console.error(err)
+    .catch(error)
 
-      return process.exit(1)
-    })
-
-  if (hooks?.['bundle:end']) await hooks['bundle:end'](options)
+  await hooks?.['bundle:end']?.(options)
 }

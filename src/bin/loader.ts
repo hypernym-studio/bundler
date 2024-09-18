@@ -1,20 +1,20 @@
-import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { readFile } from 'node:fs/promises'
 import { exists, writeFile } from '@hypernym/utils/fs'
 import { cyan } from '@hypernym/colors'
 import { build } from 'esbuild'
-import { externals } from '../config'
+import { externals } from '@/config'
 import { logger, error } from '@/utils'
-import type { Options } from '@/types'
+import type { ConfigLoader, Options } from '@/types'
 import type { Args } from '@/types/args'
 
 export async function loadConfig(
   cwd: string,
   filePath: string,
   defaults: Options,
-): Promise<Options> {
+): Promise<ConfigLoader> {
   const result = await build({
-    entryPoints: [filePath],
+    entryPoints: [resolve(cwd, filePath)],
     bundle: true,
     write: false,
     format: 'esm',
@@ -30,13 +30,13 @@ export async function loadConfig(
     ...content.default,
   }
 
-  return config
+  return { options: config, path: filePath }
 }
 
 export async function createConfigLoader(
   cwd: string,
   args: Args,
-): Promise<Options> {
+): Promise<ConfigLoader> {
   const pkgPath = resolve(cwd, 'package.json')
   const pkg = await readFile(pkgPath, 'utf-8').catch(error)
   const { dependencies } = JSON.parse(pkg)
@@ -51,7 +51,7 @@ export async function createConfigLoader(
   }
 
   if (args.config) {
-    const path = resolve(cwd, args.config)
+    const path = args.config
     const isConfig = await exists(path)
     if (isConfig) return await loadConfig(cwd, path, defaults)
     else return logger.exit(warnMessage)
@@ -61,7 +61,7 @@ export async function createConfigLoader(
   const configExts: string[] = ['.ts', '.js', '.mts', '.mjs']
 
   for (const ext of configExts) {
-    const path = resolve(cwd, `${configName}${ext}`)
+    const path = `${configName}${ext}`
     const isConfig = await exists(path)
     if (isConfig) return await loadConfig(cwd, path, defaults)
   }

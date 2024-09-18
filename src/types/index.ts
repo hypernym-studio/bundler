@@ -1,6 +1,7 @@
 export * from './entries'
 export * from './hooks'
-export * from './plugins'
+export * from './transformers'
+export * from './loader'
 export * from './options'
 export * from './config'
 export { BuildLogs, BuildStats } from './build'

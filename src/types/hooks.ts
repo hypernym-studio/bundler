@@ -46,26 +46,10 @@ export interface HooksOptions {
    * @example
    *
    * ```ts
-   * import { plugin1, plugin2, plugin3 } from './plugins'
-   *
    * export default defineConfig({
    *   hooks: {
    *     'build:entry:start': async (options, stats) => {
-   *       // adds custom plugins for a specific entry only
-   *       if (options.input?.includes('./src/index.ts')) {
-   *         options.plugins = [
-   *           plugin1(), // adds a custom plugin before the default bundler plugins
-   *           ...options.plugins, // list of default bundler plugins
-   *           plugin2(), // adds a custom plugin after the default bundler plugins
-   *         ]
-   *       }
-   *       // adds custom plugins for a specific types only
-   *       if (options.types?.includes('./src/types.ts')) {
-   *         options.plugins = [
-   *           ...options.plugins, // list of default bundler plugins
-   *           plugin3(), // adds a custom plugin designed to work only with TS declarations
-   *         ]
-   *       }
+   *      // ...
    *     }
    *   }
    * })

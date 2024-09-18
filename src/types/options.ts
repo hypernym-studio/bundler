@@ -1,5 +1,6 @@
 import type { EntryOptions } from './entries'
 import type { HooksOptions } from './hooks'
+import type { Alias } from '@rollup/plugin-alias'
 
 export interface Options {
   /**
@@ -13,7 +14,7 @@ export interface Options {
    * export default defineConfig({
    *   entries: [
    *     { input: './src/index.ts' }, // => './dist/index.mjs'
-   *     { types: './src/types.ts' }, // => './dist/types.d.ts'
+   *     { declaration: './src/types.ts' }, // => './dist/types.d.ts'
    *     // ...
    *   ]
    * })
@@ -22,6 +23,14 @@ export interface Options {
   entries: EntryOptions[]
   /**
    * Specifies the output directory for production bundle.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   outDir: 'output',
+   * })
+   * ```
    *
    * @default 'dist'
    */
@@ -33,6 +42,14 @@ export interface Options {
    * IDs and regexps from this option are applied globally to all entries.
    *
    * Also, it is possible to define externals individually per entry (`entry.externals`).
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   externals: ['id-1', 'id-2', /regexp/],
+   * })
+   * ```
    *
    * @default [/^node:/, /^@types/, /^@rollup/, /^@hypernym/, /^rollup/, ...pkg.dependencies]
    */
@@ -56,21 +73,36 @@ export interface Options {
    */
   hooks?: HooksOptions
   /**
-   * Specifies global path alias support.
+   * Specifies prefixes that will resolve imports with custom paths.
    *
-   * If true, it enables import prefixes:
+   * Enables these `alias` by default:
    *
-   * - `@/*`
-   * - `~/*`
+   * ```ts
+   * // Imports module from './src/utils/index.js'
+   * import { module } from '@/utils' // @
+   * import { module } from '~/utils' // ~
+   * ```
+   *
+   * Also, it is possible to completely override the default aliases by setting custom ones.
    *
    * @example
    *
    * ```ts
+   * export default defineConfig({
+   *   alias: [
+   *     { find: /^#/, replacement: resolve('./src') },
+   *   ]
+   * })
+   * ```
+   *
+   * Now imports can be used like this:
+   *
+   * ```ts
    * // Imports module from './src/utils/index.js'
-   * import { module } from '@/utils/index.js'
+   * import { module } from '#/utils' // #
    * ```
    *
    * @default undefined
    */
-  alias?: true
+  alias?: Alias[]
 }

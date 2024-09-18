@@ -15,7 +15,7 @@ async function main() {
 
   const config = await createConfigLoader(cwd, args)
 
-  await createBuilder(cwd, args, config)
+  await createBuilder(cwd, config)
 }
 
 main().catch(error)

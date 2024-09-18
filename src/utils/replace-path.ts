@@ -12,7 +12,7 @@
  *       input: './src/index.ts',
  *       externals: [/^@\/path/],
  *       // replaces `@/path` with `./path/index.mjs`
- *       paths: (id) => replacePath(/^@\/path/, './easing/index.mjs')(id),
+ *       paths: (id) => replacePath(/^@\/path/, './path/index.mjs')(id),
  *     },
  *   ]
  * })

@@ -1,15 +1,7 @@
-import type { OutputOptions } from 'rollup'
-import type { PluginsInput, PluginsTypes } from './plugins'
+import type { OutputOptions, Plugin } from 'rollup'
+import type { TransformersChunk, TransformersDeclaration } from './transformers'
 
 export interface EntryBase {
-  /**
-   * Specifies the path of the transformed module.
-   *
-   * If not specified, matches the `input` path with the appropriate extension.
-   *
-   * @default undefined
-   */
-  output?: string
   /**
    * Specifies the format of the generated module.
    *
@@ -61,19 +53,41 @@ export interface EntryBase {
    * @default undefined
    */
   logFilter?: string[]
-}
-
-export interface EntryInput extends EntryBase {
   /**
-   * Specifies the path of the module's build source.
-   */
-  input: string
-  /**
-   * Specifies plugin options.
+   * Specifies `rollup` plugins.
+   *
+   * Adding custom plugins disables all built-in `transformers` for full customization.
    *
    * @default undefined
    */
-  plugins?: PluginsInput
+  plugins?: Plugin[]
+}
+
+export interface EntryChunk extends EntryBase {
+  /**
+   * Specifies the path of the build source.
+   */
+  input?: string
+  /**
+   * Specifies the path of the transformed file.
+   *
+   * @default undefined
+   */
+  output?: string
+  /**
+   * Specifies the built-in `transformers` options.
+   *
+   * Available transformers:
+   *
+   * - `esbuild`
+   * - `resolve`
+   * - `replace`
+   * - `json`
+   * - `alias`
+   *
+   * @default undefined
+   */
+  transformers?: TransformersChunk
   /**
    * Specifies the global variable name that representing exported bundle.
    *
@@ -96,24 +110,101 @@ export interface EntryInput extends EntryBase {
    * Intended for `umd/iife` formats.
    */
   extend?: OutputOptions['extend']
+  declaration?: never
+  copy?: never
+  template?: never
 }
 
-export interface EntryTypes extends EntryBase {
+export interface EntryDeclaration extends EntryBase {
   /**
-   * Specifies the path of the module's build source that contains only TS definitions.
+   * Specifies the path of the TypeScript `declaration` build source.
    */
-  types: string
+  declaration?: string
   /**
-   * Specifies plugin options.
+   * Specifies the path of the TypeScript  transformed `declaration` file.
    *
    * @default undefined
    */
-  plugins?: PluginsTypes
+  output?: string
+  /**
+   * Specifies the built-in `transformers` options.
+   *
+   * Available transformers:
+   *
+   * - `dts`
+   * - `alias`
+   *
+   * @default undefined
+   */
+  transformers?: TransformersDeclaration
+  input?: never
+  copy?: never
+  template?: never
+  name?: never
+  globals?: never
+  extend?: never
 }
 
-export interface EntryTemplate extends Pick<EntryBase, 'logFilter'> {
+export interface CopyOptions {
   /**
-   * Specifies the build entry as a module template.
+   * Specifies the path of the source.
+   */
+  input: string | string[]
+  /**
+   * Specifies the path of the destination directory.
+   */
+  output: string
+  /**
+   * Copy directories recursively.
+   *
+   * @default true
+   */
+  recursive?: boolean
+  /**
+   * Filters copied `files/directories`.
+   *
+   * Returns `true` to copy the item, `false` to ignore it.
+   *
+   * @default undefined
+   */
+  filter?(source: string, destination: string): boolean
+}
+
+export interface EntryCopy {
+  /**
+   * Copies the single `file` or entire `directory` structure from source to destination, including subdirectories and files.
+   *
+   * This can be very useful for copying some assets that don't need a transformation process, but a simple copy paste feature.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     {
+   *       copy: {
+   *         input: './src/path/file.ts', // or ['path-dir', 'path-file.ts', ...]
+   *         output: './dist/out', // path to output dir
+   *       }
+   *     }
+   *   ]
+   * })
+   * ```
+   *
+   * @default undefined
+   */
+  copy?: CopyOptions
+  input?: never
+  declaration?: never
+  template?: never
+  name?: never
+  globals?: never
+  extend?: never
+}
+
+export interface EntryTemplate {
+  /**
+   * Specifies the content of the `template` file.
    *
    * Provides the ability to dynamically inject template content during the build phase.
    *
@@ -123,50 +214,28 @@ export interface EntryTemplate extends Pick<EntryBase, 'logFilter'> {
    * export default defineConfig({
    *   entries: [
    *     {
-   *       template: true,
+   *       template: `// TypeScript code...`,
    *       output: './dist/template.ts',
-   *       content: '// TypeScript code...',
    *     },
    *   ]
    * })
    * ```
    */
-  template: true
+  template: string
   /**
-   * Specifies the path of the transformed module template.
+   * Specifies the path of the transformed `template` file.
    */
   output: string
-  /**
-   * Specifies the content of the module template.
-   */
-  content: OutputOptions['intro']
-  /**
-   * Specifies the format of the generated module template.
-   *
-   * @example
-   *
-   * ```ts
-   * export default defineConfig({
-   *   entries: [
-   *     {
-   *       template: true,
-   *       output: './dist/template.json',
-   *       content: '{}',
-   *       format: 'json',
-   *     },
-   *   ]
-   * })
-   * ```
-   *
-   * @default 'esm'
-   */
-  format?: string
-  /**
-   * Specifies plugin options.
-   *
-   * @default undefined
-   */
-  plugins?: Pick<PluginsInput, 'esbuild'>
+  input?: never
+  declaration?: never
+  copy?: never
+  name?: never
+  globals?: never
+  extend?: never
 }
 
-export type EntryOptions = EntryInput | EntryTypes | EntryTemplate
+export type EntryOptions =
+  | EntryChunk
+  | EntryDeclaration
+  | EntryCopy
+  | EntryTemplate

@@ -1,7 +1,9 @@
 import { resolve, parse } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { cp, readdir } from 'node:fs/promises'
 import { stat } from 'node:fs/promises'
-import { isObject } from '@hypernym/utils'
+import { dim } from '@hypernym/colors'
+import { isObject, isString } from '@hypernym/utils'
+import { writeFile } from '@hypernym/utils/fs'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
 import replacePlugin from '@rollup/plugin-replace'
@@ -10,9 +12,41 @@ import resolvePlugin from '@rollup/plugin-node-resolve'
 import aliasPlugin from '@rollup/plugin-alias'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
 import { esbuild as esbuildPlugin } from '@/utils/plugins/esbuild'
-import { getOutputPath } from '@/utils'
-import type { Plugin, ModuleFormat } from 'rollup'
+import { getOutputPath, formatMs, formatBytes, error } from '@/utils'
+import type { ModuleFormat } from 'rollup'
+import type { RollupAliasOptions } from '@rollup/plugin-alias'
 import type { Options, BuildStats, BuildLogs } from '@/types'
+
+function logModuleStats(file: {
+  format: string
+  path: string
+  buildTime: number
+  size: number
+  logs: BuildLogs[]
+}) {
+  const cl = console.log
+  const base = parse(file.path).base
+  const path = file.path.replace(base, '')
+  let format = file.format
+
+  if (format.includes('system')) format = 'sys'
+  if (format === 'commonjs') format = 'cjs'
+  if (format === 'module') format = 'esm'
+
+  cl(
+    dim('├─'),
+    `+ ${format}`,
+    dim(path) + base,
+    dim(`(${formatMs(file.buildTime)})`),
+    formatBytes(file.size),
+  )
+
+  if (file.logs) {
+    for (const log of file.logs) {
+      cl(dim('├─'), `! ${log.level}`, dim(path) + base, dim(log.log.message))
+    }
+  }
+}
 
 export async function build(
   cwd: string,
@@ -28,15 +62,17 @@ export async function build(
     files: [],
   }
 
-  if (hooks?.['build:start']) await hooks['build:start'](options, buildStats)
+  await hooks?.['build:start']?.(options, buildStats)
 
   if (options.entries) {
     start = Date.now()
 
-    const aliasDir = `${resolve(cwd, './src')}/`
-    const aliasOptions = {
-      entries: [
+    const aliasDir = resolve(cwd, './src')
+    let aliasOptions: RollupAliasOptions = {
+      entries: options.alias || [
+        { find: /^@/, replacement: aliasDir },
         { find: /^@\//, replacement: aliasDir },
+        { find: /^~/, replacement: aliasDir },
         { find: /^~\//, replacement: aliasDir },
       ],
     }
@@ -44,36 +80,80 @@ export async function build(
     for (const entry of options.entries) {
       const entryStart = Date.now()
 
-      let logFilter = getLogFilter(entry.logFilter || [])
+      if (entry.copy) {
+        const _entry = {
+          input: isString(entry.copy.input)
+            ? [entry.copy.input]
+            : entry.copy.input,
+          output: entry.copy.output,
+          recursive: entry.copy.recursive || true,
+          filter: entry.copy.filter,
+        }
+        const buildLogs: BuildLogs[] = []
 
-      if ('input' in entry) {
+        for (const copyInput of _entry.input) {
+          const fileSrc = resolve(cwd, copyInput)
+          const fileDist = resolve(cwd, _entry.output, copyInput)
+
+          await cp(fileSrc, fileDist, {
+            recursive: _entry.recursive,
+            filter: _entry.filter,
+          }).catch(error)
+
+          const stats = await stat(fileDist)
+          let totalSize = 0
+
+          if (!stats.isDirectory()) totalSize = stats.size
+          else {
+            const files = await readdir(fileDist, { recursive: true })
+            for (const file of files) {
+              const filePath = resolve(fileDist, file)
+              const fileStat = await stat(filePath)
+              totalSize = totalSize + fileStat.size
+            }
+          }
+
+          const parseInput = (path: string): string => {
+            if (path.startsWith('./')) return path.slice(2)
+            else return path
+          }
+
+          const parseOutput = (path: string): string => {
+            if (path.startsWith('./')) return path
+            else return `./${path}`
+          }
+
+          const fileStats = {
+            path: `${parseOutput(_entry.output)}/${parseInput(copyInput)}`,
+            size: totalSize,
+            buildTime: Date.now() - entryStart,
+            format: 'copy',
+            logs: buildLogs,
+          }
+
+          buildStats.files.push(fileStats)
+          buildStats.size = buildStats.size + stats.size
+
+          logModuleStats(fileStats)
+        }
+      }
+
+      if (entry.input) {
+        const logFilter = getLogFilter(entry.logFilter || [])
+
         const _output = getOutputPath(outDir, entry.input)
         let _format: ModuleFormat = 'esm'
         if (_output.endsWith('.cjs')) _format = 'cjs'
 
         const buildLogs: BuildLogs[] = []
-        const _entry: {
-          input: string
-          output: string
-          externals: typeof entry.externals
-          format: ModuleFormat
-          plugins: Plugin[]
-          pluginsOptions: typeof entry.plugins
-          banner: typeof entry.banner
-          footer: typeof entry.footer
-          intro: typeof entry.intro
-          outro: typeof entry.outro
-          paths: typeof entry.paths
-          name: typeof entry.name
-          globals: typeof entry.globals
-          extend: typeof entry.extend
-        } = {
+        const _entry = {
           input: entry.input,
           output: entry.output || _output,
           externals: entry.externals || options.externals,
           format: entry.format || _format,
-          plugins: [esbuildPlugin(entry.plugins?.esbuild)],
-          pluginsOptions: entry.plugins,
+          transformers: entry.transformers,
+          defaultPlugins: [esbuildPlugin(entry.transformers?.esbuild)],
+          plugins: entry.plugins,
           banner: entry.banner,
           footer: entry.footer,
           intro: entry.intro,
@@ -84,41 +164,41 @@ export async function build(
           extend: entry.extend,
         }
 
-        if (_entry.pluginsOptions?.json) {
-          const jsonOptions = isObject(_entry.pluginsOptions.json)
-            ? _entry.pluginsOptions.json
-            : undefined
-          _entry.plugins.push(jsonPlugin(jsonOptions))
-        }
+        if (!entry.plugins) {
+          if (_entry.transformers?.json) {
+            const jsonOptions = isObject(_entry.transformers.json)
+              ? _entry.transformers.json
+              : undefined
+            _entry.defaultPlugins.push(jsonPlugin(jsonOptions))
+          }
 
-        if (_entry.pluginsOptions?.replace) {
-          _entry.plugins.unshift(
-            replacePlugin({
-              preventAssignment: true,
-              ..._entry.pluginsOptions.replace,
-            }),
+          if (_entry.transformers?.replace) {
+            _entry.defaultPlugins.unshift(
+              replacePlugin({
+                preventAssignment: true,
+                ..._entry.transformers.replace,
+              }),
+            )
+          }
+
+          if (_entry.transformers?.resolve) {
+            const resolveOptions = isObject(_entry.transformers.resolve)
+              ? _entry.transformers.resolve
+              : undefined
+            _entry.defaultPlugins.unshift(resolvePlugin(resolveOptions))
+          }
+
+          _entry.defaultPlugins.unshift(
+            aliasPlugin(_entry.transformers?.alias || aliasOptions),
           )
         }
 
-        if (_entry.pluginsOptions?.resolve) {
-          const resolveOptions = isObject(_entry.pluginsOptions.resolve)
-            ? _entry.pluginsOptions.resolve
-            : undefined
-          _entry.plugins.unshift(resolvePlugin(resolveOptions))
-        }
-
-        if (options.alias) {
-          _entry.plugins.unshift(aliasPlugin(aliasOptions))
-        }
-
-        if (hooks?.['build:entry:start']) {
-          await hooks['build:entry:start'](_entry, buildStats)
-        }
+        await hooks?.['build:entry:start']?.(_entry, buildStats)
 
         const _build = await rollup({
           input: resolve(cwd, _entry.input),
           external: _entry.externals,
-          plugins: _entry.plugins,
+          plugins: _entry.plugins || _entry.defaultPlugins,
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
           },
@@ -137,45 +217,38 @@ export async function build(
         })
         const stats = await stat(resolve(cwd, _entry.output))
 
-        buildStats.files.push({
+        const file = {
           path: _entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
           format: _entry.format,
           logs: buildLogs,
-        })
+        }
+
+        buildStats.files.push(file)
         buildStats.size = buildStats.size + stats.size
 
-        if (hooks?.['build:entry:end']) {
-          await hooks['build:entry:end'](_entry, buildStats)
-        }
+        logModuleStats(file)
+
+        await hooks?.['build:entry:end']?.(_entry, buildStats)
       }
 
-      if ('types' in entry) {
-        const _output = getOutputPath(outDir, entry.types, true)
+      if (entry.declaration) {
+        const logFilter = getLogFilter(entry.logFilter || [])
+
+        const _output = getOutputPath(outDir, entry.declaration, true)
         let _format: ModuleFormat = 'esm'
         if (_output.endsWith('.d.cts')) _format = 'cjs'
 
         const buildLogs: BuildLogs[] = []
-        const _entry: {
-          types: string
-          output: string
-          externals: typeof entry.externals
-          format: ModuleFormat
-          plugins: Plugin[]
-          pluginsOptions: typeof entry.plugins
-          banner: typeof entry.banner
-          footer: typeof entry.footer
-          intro: typeof entry.intro
-          outro: typeof entry.outro
-          paths: typeof entry.paths
-        } = {
-          types: entry.types,
+        const _entry = {
+          input: entry.declaration,
           output: entry.output || _output,
           externals: entry.externals || options.externals,
           format: entry.format || _format,
-          plugins: [dtsPlugin(entry.plugins?.dts)],
-          pluginsOptions: entry.plugins,
+          transformers: entry.transformers,
+          defaultPlugins: [dtsPlugin(entry.transformers?.dts)],
+          plugins: entry.plugins,
           banner: entry.banner,
           footer: entry.footer,
           intro: entry.intro,
@@ -183,18 +256,18 @@ export async function build(
           paths: entry.paths,
         }
 
-        if (options.alias) {
-          _entry.plugins.unshift(aliasPlugin(aliasOptions))
+        if (!entry.plugins) {
+          _entry.defaultPlugins.unshift(
+            aliasPlugin(_entry.transformers?.alias || aliasOptions),
+          )
         }
 
-        if (hooks?.['build:entry:start']) {
-          await hooks['build:entry:start'](_entry, buildStats)
-        }
+        await hooks?.['build:entry:start']?.(_entry, buildStats)
 
         const _build = await rollup({
-          input: resolve(cwd, _entry.types),
+          input: resolve(cwd, _entry.input),
           external: _entry.externals,
-          plugins: _entry.plugins,
+          plugins: _entry.plugins || _entry.defaultPlugins,
           onLog: (level, log) => {
             if (logFilter(log)) buildLogs.push({ level, log })
           },
@@ -210,73 +283,53 @@ export async function build(
         })
         const stats = await stat(resolve(cwd, _entry.output))
 
-        buildStats.files.push({
+        const fileStats = {
           path: _entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
           format: 'dts',
           logs: buildLogs,
-        })
+        }
+
+        buildStats.files.push(fileStats)
         buildStats.size = buildStats.size + stats.size
 
-        if (hooks?.['build:entry:end']) {
-          await hooks['build:entry:end'](_entry, buildStats)
-        }
+        logModuleStats(fileStats)
+
+        await hooks?.['build:entry:end']?.(_entry, buildStats)
       }
 
-      if ('template' in entry) {
-        logFilter = getLogFilter(entry.logFilter || ['!code:EMPTY_BUNDLE'])
-
-        const _distDir = parse(fileURLToPath(import.meta.url)).dir
-        const _output = entry.output
-        let _format = 'esm'
-        if (_output.endsWith('.cjs')) _format = 'cjs'
-
+      if (entry.template && entry.output) {
         const buildLogs: BuildLogs[] = []
-        const _entry: {
-          template: string
-          output: string
-          content: typeof entry.content
-          plugins: Plugin[]
-          pluginsOptions: typeof entry.plugins
-          format: string
-        } = {
-          template: resolve(_distDir, '_empty.ts'),
-          output: _output,
-          content: entry.content,
-          plugins: [esbuildPlugin(entry.plugins?.esbuild)],
-          pluginsOptions: entry.plugins,
-          format: entry.format || _format,
+
+        const _entry = {
+          template: entry.template,
+          output: entry.output,
         }
 
-        const _build = await rollup({
-          input: _entry.template,
-          plugins: _entry.plugins,
-          onLog: (level, log) => {
-            if (logFilter(log)) buildLogs.push({ level, log })
-          },
-        })
-        await _build.write({
-          file: resolve(cwd, _entry.output),
-          intro: _entry.content,
-        })
+        await writeFile(_entry.output, `${_entry.template}`, 'utf-8')
+
         const stats = await stat(resolve(cwd, _entry.output))
 
-        buildStats.files.push({
+        const fileStats = {
           path: _entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
-          format: _entry.format,
+          format: 'tmp',
           logs: buildLogs,
-        })
+        }
+
+        buildStats.files.push(fileStats)
         buildStats.size = buildStats.size + stats.size
+
+        logModuleStats(fileStats)
       }
     }
 
     buildStats.buildTime = Date.now() - start
   }
 
-  if (hooks?.['build:end']) await hooks['build:end'](options, buildStats)
+  await hooks?.['build:end']?.(options, buildStats)
 
   return buildStats
 }
