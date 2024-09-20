@@ -1,9 +1,8 @@
 import { resolve, parse } from 'node:path'
-import { cp, readdir } from 'node:fs/promises'
 import { stat } from 'node:fs/promises'
 import { dim } from '@hypernym/colors'
+import { write, copy, readdir } from '@hypernym/utils/fs'
 import { isObject, isString } from '@hypernym/utils'
-import { writeFile } from '@hypernym/utils/fs'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
 import replacePlugin from '@rollup/plugin-replace'
@@ -95,7 +94,7 @@ export async function build(
           const fileSrc = resolve(cwd, copyInput)
           const fileDist = resolve(cwd, _entry.output, copyInput)
 
-          await cp(fileSrc, fileDist, {
+          await copy(fileSrc, fileDist, {
             recursive: _entry.recursive,
             filter: _entry.filter,
           }).catch(error)
@@ -105,7 +104,7 @@ export async function build(
 
           if (!stats.isDirectory()) totalSize = stats.size
           else {
-            const files = await readdir(fileDist, { recursive: true })
+            const files = await readdir(fileDist)
             for (const file of files) {
               const filePath = resolve(fileDist, file)
               const fileStat = await stat(filePath)
@@ -307,7 +306,7 @@ export async function build(
           output: entry.output,
         }
 
-        await writeFile(_entry.output, `${_entry.template}`, 'utf-8')
+        await write(_entry.output, _entry.template)
 
         const stats = await stat(resolve(cwd, _entry.output))
 

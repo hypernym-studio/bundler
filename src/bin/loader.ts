@@ -1,6 +1,5 @@
 import { resolve } from 'node:path'
-import { readFile } from 'node:fs/promises'
-import { exists, writeFile } from '@hypernym/utils/fs'
+import { exists, write, read } from '@hypernym/utils/fs'
 import { cyan } from '@hypernym/colors'
 import { build } from 'esbuild'
 import { externals } from '@/config'
@@ -23,7 +22,7 @@ export async function loadConfig(
   })
   const code = result.outputFiles[0].text
   const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.mjs')
-  await writeFile(tempConfig, code, 'utf-8')
+  await write(tempConfig, code)
   const content = await import(tempConfig)
   const config: Options = {
     ...defaults,
@@ -38,7 +37,7 @@ export async function createConfigLoader(
   args: Args,
 ): Promise<ConfigLoader> {
   const pkgPath = resolve(cwd, 'package.json')
-  const pkg = await readFile(pkgPath, 'utf-8').catch(error)
+  const pkg = await read(pkgPath).catch(error)
   const { dependencies } = JSON.parse(pkg)
 
   const warnMessage = `Missing required configuration. To start bundling, add the ${cyan(
