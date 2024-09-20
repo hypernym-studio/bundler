@@ -45,7 +45,7 @@
     "prepublishOnly": "npm run build"
   },
   "sideEffects": false,
-  "packageManager": "pnpm@9.10.0",
+  "packageManager": "pnpm@9.11.0",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
@@ -65,20 +65,20 @@
   "dependencies": {
     "@hypernym/args": "^0.3.0",
     "@hypernym/colors": "^1.0.1",
-    "@hypernym/utils": "^3.0.1",
+    "@hypernym/utils": "^3.4.0",
     "@rollup/plugin-alias": "^5.1.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.7",
     "@rollup/pluginutils": "^5.1.0",
     "esbuild": "^0.23.1",
-    "rollup": "^4.21.3",
+    "rollup": "^4.22.2",
     "rollup-plugin-dts": "^6.1.1"
   },
   "devDependencies": {
     "@hypernym/eslint-config": "^3.5.0",
     "@hypernym/prettier-config": "^3.2.0",
-    "@hypernym/tsconfig": "^2.3.0",
+    "@hypernym/tsconfig": "^2.4.0",
     "@types/node": "^22.5.5",
     "eslint": "^9.10.0",
     "prettier": "^3.3.3",
