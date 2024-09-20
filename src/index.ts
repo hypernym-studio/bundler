@@ -1,2 +1,2 @@
 export * from './config'
-export * from './utils/replace-path'
+export * from './utils/resolve-paths'
