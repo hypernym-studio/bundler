@@ -14,7 +14,9 @@
 
 <pre align="center">pnpm add -D @hypernym/bundler</pre>
 
-<h4 align="center">Hypernym Studio</h4>
+<p align="center">
+  <strong>Hypernym Studio</strong>
+</p>
 
 <br>
 
@@ -443,22 +445,24 @@ export default defineConfig({
 
 ## Utils
 
-### replacePath
+### resolvePaths
 
-- Type: `(path: RegExp | string, replace: string): (id: string) => string`
+- Type: `(options: ResolvePathsOptions[]): (id: string) => string`
 
-Replaces the external module ID with a custom value.
+Resolves external module IDs into custom paths.
 
 ```ts
-import { defineConfig, replacePath } from '@hypernym/bundler'
+import { defineConfig, resolvePaths } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
     {
       input: './src/index.ts',
       externals: [/^@\/path/],
-      // replaces `@/path` with `./path/index.mjs`
-      paths: (id) => replacePath(/^@\/path/, './path/index.mjs')(id),
+      paths: resolvePaths([
+        // replaces `@/path` with `./path/index.mjs`
+        { find: /^@\/path/, replacement: './path/index.mjs' },
+      ]),
     },
   ],
 })
