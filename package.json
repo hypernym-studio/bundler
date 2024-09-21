@@ -20,14 +20,13 @@
   ],
   "keywords": [
     "module",
-    "modules",
     "bundling",
     "javascript",
     "typescript",
     "hyperbundler",
+    "declarations",
     "bundler",
     "builder",
-    "package",
     "bundle",
     "types",
     "build",
@@ -72,7 +71,7 @@
     "@rollup/plugin-replace": "^5.0.7",
     "@rollup/pluginutils": "^5.1.0",
     "esbuild": "^0.23.1",
-    "rollup": "^4.22.2",
+    "rollup": "^4.22.4",
     "rollup-plugin-dts": "^6.1.1"
   },
   "devDependencies": {
@@ -80,7 +79,7 @@
     "@hypernym/prettier-config": "^3.2.0",
     "@hypernym/tsconfig": "^2.4.0",
     "@types/node": "^22.5.5",
-    "eslint": "^9.10.0",
+    "eslint": "^9.11.0",
     "prettier": "^3.3.3",
     "typescript": "^5.5.4"
   }
