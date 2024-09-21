@@ -105,4 +105,31 @@ export interface Options {
    * @default undefined
    */
   alias?: Alias[]
+  /**
+   * Specifies the minification for all `chunk` entries.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   minify: true,
+   * })
+   * ```
+   *
+   * It can also be set per entry.
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     {
+   *       input: './src/index.ts',
+   *       minify: true,
+   *     },
+   *   ],
+   * })
+   * ```
+   *
+   * @default undefined
+   */
+  minify?: boolean
 }

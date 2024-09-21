@@ -36,10 +36,6 @@
 
 1. Create a `bundler.config.ts` file at the root of your project:
 
-> [!NOTE]
->
-> Configuration also accepts `.js`, `.mjs`, `.ts`, `.mts` formats.
-
 ```ts
 // bundler.config.ts
 
@@ -66,9 +62,7 @@ export default defineConfig({
     {
       input: './src/utils/index.ts',
       output: './dist/utils/utils.min.mjs',
-      transformers: {
-        esbuild: { minify: true },
-      },
+      minify: true,
     },
     // ...
   ],
@@ -81,35 +75,33 @@ export default defineConfig({
 npx hyperbundler
 ```
 
-<details>
-<summary>CLI Output</summary>
+## Config
 
-<br>
-<p>Example of CLI Output:</p>
+`Hyperbundler` automatically detects custom configuration from the project root that can override or extend the build behavior.
 
-```txt
-┌─────────────────┐
-│ ✦✦ HYPERBUNDLER │ v0.11.0
-└─────────────────┘
-i Config bundler.config.ts
-i Bundling started...
-* Processing [8:07:26 PM] Transforming files
-│
-├─ + esm ./dist/index.mjs (50ms) 313 B
-├─ + dts ./dist/types/index.d.ts (1.23s) 13.61 KB
-├─ + esm ./dist/bin/index.mjs (119ms) 16.53 KB
-│
-* Succeeded [8:07:28 PM] Module transformation is done
-✔ Bundling fully completed in 1.40s
-✔ 3 modules transformed. Total size is 30.45 KB
-✦✦ HYPERBUNDLER [8:07:28 PM] Bundle is generated and ready for production
+Configuration file also accepts `.js`, `.mjs`, `.ts`, `.mts` formats.
+
+```ts
+// bundler.config.{js,mjs,ts,mts}
+
+import { defineConfig } from '@hypernym/bundler'
+
+export default defineConfig({
+  // ...
+})
 ```
 
-</details>
+### Custom path
+
+Set a custom config path via the CLI command:
+
+```sh
+npx hyperbundler --config hyper.config.ts
+```
 
 ## Options
 
-All options are documented with descriptions and examples, and auto-completion will be offered as you type.
+All options are documented with descriptions and examples so auto-completion will be offered as you type.
 
 Simply hover over the property and see what it does in the `quickinfo`.
 
@@ -294,6 +286,36 @@ Now imports can be used like this:
 import { module } from '#/utils' // #
 ```
 
+### minify
+
+- Type: `boolean`
+- Default: `undefined`
+
+Specifies the minification for all `chunk` entries.
+
+```ts
+// bundler.config.ts
+
+import { defineConfig } from '@hypernym/bundler'
+
+export default defineConfig({
+  minify: true,
+})
+```
+
+It can also be set per entry.
+
+```ts
+export default defineConfig({
+  entries: [
+    {
+      input: './src/index.ts',
+      minify: true,
+    },
+  ],
+})
+```
+
 ## Hooks
 
 List of lifecycle hooks that are called at various phases:
@@ -466,16 +488,6 @@ export default defineConfig({
     },
   ],
 })
-```
-
-## CLI
-
-### Custom Config
-
-Set a custom config path via the CLI command:
-
-```sh
-npx hyperbundler --config hyper.config.ts
 ```
 
 ## Community

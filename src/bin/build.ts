@@ -2,7 +2,7 @@ import { resolve, parse } from 'node:path'
 import { stat } from 'node:fs/promises'
 import { dim } from '@hypernym/colors'
 import { write, copy, readdir } from '@hypernym/utils/fs'
-import { isObject, isString } from '@hypernym/utils'
+import { isObject, isString, isUndefined } from '@hypernym/utils'
 import { rollup } from 'rollup'
 import { getLogFilter } from 'rollup/getLogFilter'
 import replacePlugin from '@rollup/plugin-replace'
@@ -151,7 +151,14 @@ export async function build(
           externals: entry.externals || options.externals,
           format: entry.format || _format,
           transformers: entry.transformers,
-          defaultPlugins: [esbuildPlugin(entry.transformers?.esbuild)],
+          defaultPlugins: [
+            esbuildPlugin({
+              minify: !isUndefined(entry.minify)
+                ? entry.minify
+                : options.minify,
+              ...entry.transformers?.esbuild,
+            }),
+          ],
           plugins: entry.plugins,
           banner: entry.banner,
           footer: entry.footer,

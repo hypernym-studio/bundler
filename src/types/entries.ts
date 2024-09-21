@@ -110,6 +110,12 @@ export interface EntryChunk extends EntryBase {
    * Intended for `umd/iife` formats.
    */
   extend?: OutputOptions['extend']
+  /**
+   * Minifies the generated code if enabled.
+   *
+   * @default undefined
+   */
+  minify?: boolean
   declaration?: never
   copy?: never
   template?: never
@@ -143,6 +149,7 @@ export interface EntryDeclaration extends EntryBase {
   name?: never
   globals?: never
   extend?: never
+  minify?: never
 }
 
 export interface CopyOptions {
@@ -200,6 +207,7 @@ export interface EntryCopy {
   name?: never
   globals?: never
   extend?: never
+  minify?: never
 }
 
 export interface EntryTemplate {
@@ -232,6 +240,7 @@ export interface EntryTemplate {
   name?: never
   globals?: never
   extend?: never
+  minify?: never
 }
 
 export type EntryOptions =
