@@ -11,18 +11,27 @@ import resolvePlugin from '@rollup/plugin-node-resolve'
 import aliasPlugin from '@rollup/plugin-alias'
 import { dts as dtsPlugin } from 'rollup-plugin-dts'
 import { esbuild as esbuildPlugin } from '@/utils/plugins/esbuild'
-import { getOutputPath, formatMs, formatBytes, error } from '@/utils'
+import {
+  getOutputPath,
+  getLongestOutput,
+  formatMs,
+  formatBytes,
+  error,
+} from '@/utils'
 import type { ModuleFormat } from 'rollup'
 import type { RollupAliasOptions } from '@rollup/plugin-alias'
 import type { Options, BuildStats, BuildLogs } from '@/types'
 
-function logModuleStats(file: {
-  format: string
-  path: string
-  buildTime: number
-  size: number
-  logs: BuildLogs[]
-}) {
+function logModuleStats(
+  file: {
+    format: string
+    path: string
+    buildTime: number
+    size: number
+    logs: BuildLogs[]
+  },
+  longestOutput: number,
+) {
   const cl = console.log
   const base = parse(file.path).base
   const path = file.path.replace(base, '')
@@ -32,17 +41,32 @@ function logModuleStats(file: {
   if (format === 'commonjs') format = 'cjs'
   if (format === 'module') format = 'esm'
 
+  longestOutput = longestOutput + 2
+  const ansiCode = 9
+  const pathDim = dim(path)
+  const output = pathDim + base
+  const pathDimNoAnsi = pathDim.length - ansiCode
+  const difference = longestOutput - pathDimNoAnsi - base.length
+  const padLength = output.length + difference
+
   cl(
-    dim('├─'),
-    `+ ${format}`,
-    dim(path) + base,
-    dim(`(${formatMs(file.buildTime)})`),
+    dim('+'),
+    format.padEnd(5),
+    output.padEnd(padLength),
+    dim('time'),
+    formatMs(file.buildTime).padEnd(7),
+    dim('size'),
     formatBytes(file.size),
   )
 
   if (file.logs) {
     for (const log of file.logs) {
-      cl(dim('├─'), `! ${log.level}`, dim(path) + base, dim(log.log.message))
+      cl(
+        dim('!'),
+        log.level.padEnd(5),
+        output.padEnd(padLength),
+        dim(log.log.message),
+      )
     }
   }
 }
@@ -64,6 +88,8 @@ export async function build(
   await hooks?.['build:start']?.(options, buildStats)
 
   if (options.entries) {
+    const longestOutput = getLongestOutput(outDir, options.entries)
+
     start = Date.now()
 
     const aliasDir = resolve(cwd, './src')
@@ -133,7 +159,7 @@ export async function build(
           buildStats.files.push(fileStats)
           buildStats.size = buildStats.size + stats.size
 
-          logModuleStats(fileStats)
+          logModuleStats(fileStats, longestOutput)
         }
       }
 
@@ -234,7 +260,7 @@ export async function build(
         buildStats.files.push(file)
         buildStats.size = buildStats.size + stats.size
 
-        logModuleStats(file)
+        logModuleStats(file, longestOutput)
 
         await hooks?.['build:entry:end']?.(_entry, buildStats)
       }
@@ -300,7 +326,7 @@ export async function build(
         buildStats.files.push(fileStats)
         buildStats.size = buildStats.size + stats.size
 
-        logModuleStats(fileStats)
+        logModuleStats(fileStats, longestOutput)
 
         await hooks?.['build:entry:end']?.(_entry, buildStats)
       }
@@ -328,7 +354,7 @@ export async function build(
         buildStats.files.push(fileStats)
         buildStats.size = buildStats.size + stats.size
 
-        logModuleStats(fileStats)
+        logModuleStats(fileStats, longestOutput)
       }
     }
 

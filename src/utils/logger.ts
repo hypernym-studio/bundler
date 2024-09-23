@@ -1,22 +1,23 @@
 import process from 'node:process'
 import { dim } from '@hypernym/colors'
-import { logoname } from '@/bin/meta'
+import { logo } from '@/bin/meta'
 
-const name = logoname.toUpperCase()
 const cl = console.log
+const separator = `/`
 
 export const logger = {
   info: (...args: any[]): void => {
-    const time = new Date().toLocaleTimeString()
-    return cl(name, dim(`[${time}]`), ...args)
+    cl(logo, dim(separator), ...args)
   },
   error: (...args: any[]): void => {
-    const time = new Date().toLocaleTimeString()
-    return cl(name, dim(`[${time}]`), ...args)
+    cl()
+    cl(logo, dim(separator), ...args)
+    cl()
   },
   exit: (message: string): never => {
-    const time = new Date().toLocaleTimeString()
-    cl(name, dim(`[${time}]`), message)
+    cl()
+    cl(logo, dim(separator), message)
+    cl()
 
     return process.exit()
   },
