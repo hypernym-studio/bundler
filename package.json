@@ -8,11 +8,12 @@
   "homepage": "https://github.com/hypernym-studio/bundler",
   "funding": "https://github.com/sponsors/ivodolenc",
   "type": "module",
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/types/index.d.cts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/index.mjs"
+      "types": "./dist/types/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
@@ -67,9 +68,9 @@
     "@hypernym/utils": "^3.4.0",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.4",
-    "@rollup/plugin-replace": "^5.0.7",
-    "@rollup/pluginutils": "^5.1.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-replace": "^6.0.1",
+    "@rollup/pluginutils": "^5.1.2",
     "esbuild": "^0.24.0",
     "rollup": "^4.22.4",
     "rollup-plugin-dts": "^6.1.1"
@@ -78,8 +79,8 @@
     "@hypernym/eslint-config": "^3.5.0",
     "@hypernym/prettier-config": "^3.2.0",
     "@hypernym/tsconfig": "^2.4.0",
-    "@types/node": "^22.5.5",
-    "eslint": "^9.11.0",
+    "@types/node": "^22.6.1",
+    "eslint": "^9.11.1",
     "prettier": "^3.3.3",
     "typescript": "^5.5.4"
   }
