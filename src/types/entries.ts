@@ -66,10 +66,33 @@ export interface EntryBase {
 export interface EntryChunk extends EntryBase {
   /**
    * Specifies the path of the build source.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     { input: './src/index.ts' }, // => './dist/index.mjs'
+   *   ]
+   * })
+   * ```
    */
   input?: string
   /**
    * Specifies the path of the transformed file.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     {
+   *       input: './src/index.ts',
+   *       output: './out/index.js', // => './out/index.js'
+   *     },
+   *   ]
+   * })
+   * ```
    *
    * @default undefined
    */
@@ -117,6 +140,7 @@ export interface EntryChunk extends EntryBase {
    */
   minify?: boolean
   declaration?: never
+  dts?: never
   copy?: never
   template?: never
 }
@@ -124,10 +148,49 @@ export interface EntryChunk extends EntryBase {
 export interface EntryDeclaration extends EntryBase {
   /**
    * Specifies the path of the TypeScript `declaration` build source.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     { dts: './src/types.ts' }, // => './dist/types.d.mts'
+   *   ]
+   * })
+   * ```
+   */
+  dts?: string
+  /**
+   * Specifies the path of the TypeScript `declaration` build source.
+   *
+   * Also, it is possible to use `dts` alias.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     { declaration: './src/types.ts' }, // => './dist/types.d.mts'
+   *   ]
+   * })
+   * ```
    */
   declaration?: string
   /**
    * Specifies the path of the TypeScript  transformed `declaration` file.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     {
+   *       dts: './src/types.ts',
+   *       output: './out/types.d.ts', // => './out/types.d.ts'
+   *     },
+   *   ]
+   * })
+   * ```
    *
    * @default undefined
    */
@@ -203,6 +266,7 @@ export interface EntryCopy {
   copy?: CopyOptions
   input?: never
   declaration?: never
+  dts?: never
   template?: never
   name?: never
   globals?: never
@@ -236,6 +300,7 @@ export interface EntryTemplate {
   output: string
   input?: never
   declaration?: never
+  dts?: never
   copy?: never
   name?: never
   globals?: never

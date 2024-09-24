@@ -149,6 +149,7 @@ export async function build(
           }
 
           const fileStats = {
+            cwd,
             path: `${parseOutput(_entry.output)}/${parseInput(copyInput)}`,
             size: totalSize,
             buildTime: Date.now() - entryStart,
@@ -166,17 +167,17 @@ export async function build(
       if (entry.input) {
         const logFilter = getLogFilter(entry.logFilter || [])
 
-        const _output = getOutputPath(outDir, entry.input)
+        const _output = entry.output || getOutputPath(outDir, entry.input)
         let _format: ModuleFormat = 'esm'
         if (_output.endsWith('.cjs')) _format = 'cjs'
 
         const buildLogs: BuildLogs[] = []
         const _entry = {
           input: entry.input,
-          output: entry.output || _output,
+          output: _output,
           externals: entry.externals || options.externals,
           format: entry.format || _format,
-          transformers: entry.transformers,
+          ...entry,
           defaultPlugins: [
             esbuildPlugin({
               minify: !isUndefined(entry.minify)
@@ -185,15 +186,6 @@ export async function build(
               ...entry.transformers?.esbuild,
             }),
           ],
-          plugins: entry.plugins,
-          banner: entry.banner,
-          footer: entry.footer,
-          intro: entry.intro,
-          outro: entry.outro,
-          paths: entry.paths,
-          name: entry.name,
-          globals: entry.globals,
-          extend: entry.extend,
         }
 
         if (!entry.plugins) {
@@ -225,7 +217,16 @@ export async function build(
           )
         }
 
-        await hooks?.['build:entry:start']?.(_entry, buildStats)
+        const fileStats = {
+          cwd,
+          path: _entry.output,
+          size: 0,
+          buildTime: entryStart,
+          format: _entry.format,
+          logs: buildLogs,
+        }
+
+        await hooks?.['build:entry:start']?.(_entry, fileStats)
 
         const _build = await rollup({
           input: resolve(cwd, _entry.input),
@@ -249,43 +250,30 @@ export async function build(
         })
         const stats = await stat(resolve(cwd, _entry.output))
 
-        const file = {
-          path: _entry.output,
-          size: stats.size,
-          buildTime: Date.now() - entryStart,
-          format: _entry.format,
-          logs: buildLogs,
-        }
+        fileStats.size = stats.size
+        fileStats.buildTime = Date.now() - entryStart
+        fileStats.logs = buildLogs
 
-        buildStats.files.push(file)
+        buildStats.files.push(fileStats)
         buildStats.size = buildStats.size + stats.size
 
-        logModuleStats(file, longestOutput)
+        logModuleStats(fileStats, longestOutput)
 
-        await hooks?.['build:entry:end']?.(_entry, buildStats)
+        await hooks?.['build:entry:end']?.(_entry, fileStats)
       }
 
-      if (entry.declaration) {
+      if (entry.dts || entry.declaration) {
         const logFilter = getLogFilter(entry.logFilter || [])
-
-        const _output = getOutputPath(outDir, entry.declaration, true)
-        let _format: ModuleFormat = 'esm'
-        if (_output.endsWith('.d.cts')) _format = 'cjs'
-
         const buildLogs: BuildLogs[] = []
+        const dts = entry.dts! || entry.declaration!
+
         const _entry = {
-          input: entry.declaration,
-          output: entry.output || _output,
+          dts,
+          output: entry.output || getOutputPath(outDir, dts, true),
           externals: entry.externals || options.externals,
-          format: entry.format || _format,
-          transformers: entry.transformers,
+          format: entry.format || 'esm',
+          ...entry,
           defaultPlugins: [dtsPlugin(entry.transformers?.dts)],
-          plugins: entry.plugins,
-          banner: entry.banner,
-          footer: entry.footer,
-          intro: entry.intro,
-          outro: entry.outro,
-          paths: entry.paths,
         }
 
         if (!entry.plugins) {
@@ -294,10 +282,19 @@ export async function build(
           )
         }
 
-        await hooks?.['build:entry:start']?.(_entry, buildStats)
+        const fileStats = {
+          cwd,
+          path: _entry.output,
+          size: 0,
+          buildTime: entryStart,
+          format: 'dts',
+          logs: buildLogs,
+        }
+
+        await hooks?.['build:entry:start']?.(_entry, fileStats)
 
         const _build = await rollup({
-          input: resolve(cwd, _entry.input),
+          input: resolve(cwd, _entry.dts),
           external: _entry.externals,
           plugins: _entry.plugins || _entry.defaultPlugins,
           onLog: (level, log) => {
@@ -315,36 +312,28 @@ export async function build(
         })
         const stats = await stat(resolve(cwd, _entry.output))
 
-        const fileStats = {
-          path: _entry.output,
-          size: stats.size,
-          buildTime: Date.now() - entryStart,
-          format: 'dts',
-          logs: buildLogs,
-        }
+        fileStats.size = stats.size
+        fileStats.buildTime = Date.now() - entryStart
+        fileStats.logs = buildLogs
 
         buildStats.files.push(fileStats)
         buildStats.size = buildStats.size + stats.size
 
         logModuleStats(fileStats, longestOutput)
 
-        await hooks?.['build:entry:end']?.(_entry, buildStats)
+        await hooks?.['build:entry:end']?.(_entry, fileStats)
       }
 
       if (entry.template && entry.output) {
         const buildLogs: BuildLogs[] = []
 
-        const _entry = {
-          template: entry.template,
-          output: entry.output,
-        }
+        await write(entry.output, entry.template)
 
-        await write(_entry.output, _entry.template)
-
-        const stats = await stat(resolve(cwd, _entry.output))
+        const stats = await stat(resolve(cwd, entry.output))
 
         const fileStats = {
-          path: _entry.output,
+          cwd,
+          path: entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
           format: 'tmp',

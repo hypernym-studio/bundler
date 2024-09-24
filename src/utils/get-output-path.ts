@@ -1,20 +1,19 @@
 export function getOutputPath(
   outDir: string,
   input: string,
-  types: boolean = false,
+  dts?: boolean,
 ): string {
   const _input = input.startsWith('./') ? input.slice(2) : input
   let output = _input.replace(_input.split('/')[0], outDir)
 
-  const ts = types ? 'd.ts' : 'mjs'
-  const mts = types ? 'd.mts' : 'mjs'
-  const cts = types ? 'd.cts' : 'cjs'
+  const ext = dts ? 'd.mts' : 'mjs'
+  const cts = dts ? 'd.cts' : 'cjs'
 
-  if (output.endsWith('.ts')) output = `${output.slice(0, -2)}${ts}`
-  if (output.endsWith('.mts')) output = `${output.slice(0, -3)}${mts}`
-  if (output.endsWith('.cts')) output = `${output.slice(0, -3)}${cts}`
+  if (output.endsWith('.js')) output = `${output.slice(0, -2)}${ext}`
+  else if (output.endsWith('.ts')) output = `${output.slice(0, -2)}${ext}`
+  else if (output.endsWith('.mts')) output = `${output.slice(0, -3)}${ext}`
+  else if (output.endsWith('.cts')) output = `${output.slice(0, -3)}${cts}`
 
   if (outDir.startsWith('./') || outDir.startsWith('../')) return output
-
-  return `./${output}`
+  else return `./${output}`
 }

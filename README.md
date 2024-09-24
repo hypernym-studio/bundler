@@ -58,7 +58,7 @@ import { defineConfig } from '@hypernym/bundler'
 export default defineConfig({
   entries: [
     { input: './src/index.ts' },
-    { declaration: './src/types/index.ts' },
+    { dts: './src/types/index.ts' },
     {
       input: './src/utils/index.ts',
       output: './dist/utils/utils.min.mjs',
@@ -99,11 +99,34 @@ Set a custom config path via the CLI command:
 npx hyperbundler --config hyper.config.ts
 ```
 
+## Formats
+
+During transformation, file formats are automatically resolved and in most cases there is no need for additional configuration.
+
+`Hyperbundler` module environment for generated files defaults to `esm`, which means the outputs will have a `.mjs` extension unless otherwise specified. For TypeScript declarations, the appropriate extension will be `.d.mts`.
+
+Formats can also be explicitly specified for each entry, if necessary.
+
+### Inputs
+
+Default transformation behaviour for all `chunk` entries:
+
+- `./srcDir/file.js` resolves to `./outDir/file.mjs`
+- `./srcDir/file.mjs` resolves to `./outDir/file.mjs`
+- `./srcDir/file.cjs` resolves to `./outDir/file.cjs`
+- `./srcDir/file.ts` resolves to `./outDir/file.mjs`
+- `./srcDir/file.mts` resolves to `./outDir/file.mjs`
+- `./srcDir/file.cts` resolves to `./outDir/file.cjs`
+
+### Declarations
+
+Default transformation behaviour for all `dts` entries:
+
+- `./srcDir/file.ts` resolves to `./outDir/file.d.mts`
+
 ## Options
 
-All options are documented with descriptions and examples so auto-completion will be offered as you type.
-
-Simply hover over the property and see what it does in the `quickinfo`.
+All options are documented with descriptions and examples so auto-completion will be offered as you type. Simply hover over the property and see what it does in the `quickinfo`.
 
 ### entries
 
@@ -121,7 +144,7 @@ import { defineConfig } from '@hypernym/bundler'
 export default defineConfig({
   entries: [
     { input: './src/index.ts' }, // => './dist/index.mjs'
-    { declaration: './src/types.ts' }, // => './dist/types.d.ts'
+    { dts: './src/types.ts' }, // => './dist/types.d.mts'
     // ...
   ],
 })
@@ -140,9 +163,7 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    {
-      input: './src/index.ts', // => './dist/index.mjs'
-    },
+    { input: './src/index.ts' }, // => './dist/index.mjs'
   ],
 })
 ```
@@ -160,9 +181,19 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    {
-      { declaration: './src/types.ts' }, // => './dist/types.d.ts'
-    },
+    { declaration: './src/types.ts' }, // => './dist/types.d.mts'
+  ],
+})
+```
+
+Also, it is possible to use `dts` alias.
+
+```ts
+import { defineConfig } from '@hypernym/bundler'
+
+export default defineConfig({
+  entries: [
+    { dts: './src/types.ts' }, // => './dist/types.d.mts'
   ],
 })
 ```
@@ -373,7 +404,7 @@ export default defineConfig({
 
 ### build:entry:start
 
-- Type: `(options: BuildEntryOptions, stats: BuildStats) => void | Promise<void>`
+- Type: `(entry: BuildEntryOptions, stats: BuildEntryStats) => void | Promise<void>`
 - Default: `undefined`
 
 Called on each entry just before the build process.
@@ -388,12 +419,12 @@ import { plugin1, plugin2 } from './src/utils/plugins.js'
 
 export default defineConfig({
   hooks: {
-    'build:entry:start': async (options, stats) => {
+    'build:entry:start': async (entry, stats) => {
       // adds custom plugins for a specific entry only
-      if (options.input?.includes('./src/index.ts')) {
-        options.defaultPlugins = [
+      if (entry.input?.includes('./src/index.ts')) {
+        entry.defaultPlugins = [
           plugin1(), // adds a custom plugin before the default bundler plugins
-          ...options.defaultPlugins, // list of default bundler plugins
+          ...entry.defaultPlugins, // list of default bundler plugins
           plugin2(), // adds a custom plugin after the default bundler plugins
         ]
       }
@@ -404,7 +435,7 @@ export default defineConfig({
 
 ### build:entry:end
 
-- Type: `(options: BuildEntryOptions, stats: BuildStats) => void | Promise<void>`
+- Type: `(entry: BuildEntryOptions, stats: BuildEntryStats) => void | Promise<void>`
 - Default: `undefined`
 
 Called on each entry right after the build process is completed.
@@ -416,7 +447,7 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   hooks: {
-    'build:entry:end': async (options, stats) => {
+    'build:entry:end': async (entry, stats) => {
       // ...
     },
   },
