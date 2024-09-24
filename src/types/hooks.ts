@@ -1,5 +1,5 @@
 import type { Options } from './options'
-import type { BuildStats, BuildEntryOptions } from './build'
+import type { BuildEntryStats, BuildStats, BuildEntryOptions } from './build'
 
 export interface HooksOptions {
   /**
@@ -48,7 +48,7 @@ export interface HooksOptions {
    * ```ts
    * export default defineConfig({
    *   hooks: {
-   *     'build:entry:start': async (options, stats) => {
+   *     'build:entry:start': async (entry, stats) => {
    *      // ...
    *     }
    *   }
@@ -58,8 +58,8 @@ export interface HooksOptions {
    * @default undefined
    */
   'build:entry:start'?: (
-    options: BuildEntryOptions,
-    stats: BuildStats,
+    entry: BuildEntryOptions,
+    stats: BuildEntryStats,
   ) => void | Promise<void>
   /**
    * Called on each entry right after the build process is completed.
@@ -69,7 +69,7 @@ export interface HooksOptions {
    * ```ts
    * export default defineConfig({
    *   hooks: {
-   *     'build:entry:end': async (options, stats) => {
+   *     'build:entry:end': async (entry, stats) => {
    *      // ...
    *     }
    *   }
@@ -79,8 +79,8 @@ export interface HooksOptions {
    * @default undefined
    */
   'build:entry:end'?: (
-    options: BuildEntryOptions,
-    stats: BuildStats,
+    entry: BuildEntryOptions,
+    stats: BuildEntryStats,
   ) => void | Promise<void>
   /**
    * Called right after building is complete.

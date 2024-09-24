@@ -14,7 +14,7 @@ export interface Options {
    * export default defineConfig({
    *   entries: [
    *     { input: './src/index.ts' }, // => './dist/index.mjs'
-   *     { declaration: './src/types.ts' }, // => './dist/types.d.ts'
+   *     { dts: './src/types.ts' }, // => './dist/types.d.mts'
    *     // ...
    *   ]
    * })
