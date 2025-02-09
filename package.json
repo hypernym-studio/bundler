@@ -1,6 +1,6 @@
 {
   "name": "@hypernym/bundler",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "author": "Hypernym Studio",
   "description": "ESM & TS module bundler.",
   "license": "MIT",
