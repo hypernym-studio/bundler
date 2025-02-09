@@ -17,6 +17,7 @@ export async function createBuilder(
 
   logger.info(dim(`v${version}`))
   cl('Config', dim(configPath))
+  cl()
   cl('Bundling started...')
   cl(
     'Processing',
@@ -40,8 +41,9 @@ export async function createBuilder(
         'Module transformation is done',
       )
       cl(`Bundling fully completed in ${buildTime}`)
+      cl()
       cl(`${modules} transformed. Total size is ${buildSize}`)
-      logger.info(`Bundle is generated and ready for production`)
+      cl(`Bundle is generated and ready for production`)
       cl()
     })
     .catch(error)
