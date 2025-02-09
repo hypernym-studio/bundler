@@ -1,22 +1,20 @@
-<h1 align="center">Hyperbundler</h1>
+<h1 align="center">Bundler</h1>
 
 <p align="center">ESM & TS module bundler.</p>
 
 <p align="center">
   <a href="https://github.com/hypernym-studio/bundler">Repository</a>
-  <span>+</span>
+  <span>✦</span>
   <a href="https://www.npmjs.com/package/@hypernym/bundler">Package</a>
-  <span>+</span>
+  <span>✦</span>
   <a href="https://github.com/hypernym-studio/bundler/releases">Releases</a>
-  <span>+</span>
+  <span>✦</span>
   <a href="https://github.com/hypernym-studio/bundler/discussions">Discussions</a>
 </p>
 
-<pre align="center">pnpm add -D @hypernym/bundler</pre>
+<br>
 
-<p align="center">
-  <strong>Hypernym Studio</strong>
-</p>
+<pre align="center">pnpm add -D @hypernym/bundler</pre>
 
 <br>
 
@@ -24,13 +22,13 @@
 
 - Powered by Rollup
 - Written in TypeScript
-- Allows advanced customization
-- Provides a powerful hooking system
-- Supports all TS module resolutions
-- Exports fully optimized code
-- Follows modern practice
-- Super easy to use
-- API friendly
+- Allows Advanced Customization
+- Provides a Powerful Hooking System
+- Supports All TS Module Resolutions
+- Exports Fully Optimized Code
+- Follows Modern Practice
+- Super Easy to Use
+- API-Friendly
 
 ## Quick Start
 
