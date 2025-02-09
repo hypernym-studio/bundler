@@ -95,10 +95,8 @@ export async function build(
     const aliasDir = resolve(cwd, './src')
     let aliasOptions: RollupAliasOptions = {
       entries: options.alias || [
-        { find: /^@/, replacement: aliasDir },
-        { find: /^@\//, replacement: aliasDir },
-        { find: /^~/, replacement: aliasDir },
-        { find: /^~\//, replacement: aliasDir },
+        { find: '@', replacement: aliasDir },
+        { find: '~', replacement: aliasDir },
       ],
     }
 
