@@ -44,8 +44,7 @@
     "format": "prettier --write .",
     "prepublishOnly": "npm run build"
   },
-  "sideEffects": false,
-  "packageManager": "pnpm@10.2.1",
+  "packageManager": "pnpm@10.4.1",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
@@ -65,23 +64,23 @@
   "dependencies": {
     "@hypernym/args": "^0.3.0",
     "@hypernym/colors": "^1.0.2",
-    "@hypernym/utils": "^3.4.1",
+    "@hypernym/utils": "^3.4.2",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/pluginutils": "^5.1.4",
     "esbuild": "^0.25.0",
-    "rollup": "^4.34.6",
+    "rollup": "^4.34.8",
     "rollup-plugin-dts": "^6.1.1"
   },
   "devDependencies": {
     "@hypernym/eslint-config": "^3.5.6",
     "@hypernym/prettier-config": "^3.2.2",
-    "@hypernym/tsconfig": "^2.5.0",
-    "@types/node": "^22.13.1",
-    "eslint": "^9.20.0",
-    "prettier": "^3.5.0",
+    "@hypernym/tsconfig": "^2.6.0",
+    "@types/node": "^22.13.5",
+    "eslint": "^9.21.0",
+    "prettier": "^3.5.2",
     "typescript": "^5.7.3"
   }
 }
