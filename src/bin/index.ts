@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { cwd as _cwd } from 'node:process'
+import { cwd } from 'node:process'
 import { createArgs } from '@hypernym/args'
 import { createConfigLoader } from './loader'
 import { createBuilder } from './builder'
@@ -8,14 +8,14 @@ import { error } from '@/utils'
 import type { Args } from '@/types/args'
 
 async function main() {
-  const cwd = _cwd()
+  const cwdir = cwd()
   const args = createArgs<Args>({
     alias: { config: 'c' },
   })
 
-  const config = await createConfigLoader(cwd, args)
+  const config = await createConfigLoader(cwdir, args)
 
-  await createBuilder(cwd, config)
+  await createBuilder(cwdir, config)
 }
 
 main().catch(error)
