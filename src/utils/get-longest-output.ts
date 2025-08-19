@@ -8,17 +8,21 @@ export function getLongestOutput(
   const outputs: string[] = []
 
   for (const entry of entries) {
-    if (entry.copy) outputs.push(entry.copy.output)
-
-    if (entry.input) {
-      const out = entry.output || getOutputPath(outDir, entry.input)
-      outputs.push(out)
+    if (entry.copy) {
+      outputs.push(
+        entry.output ||
+          getOutputPath(outDir, entry.copy, { extension: 'original' }),
+      )
     }
 
-    if (entry.declaration || entry.dts) {
-      const dts = entry.declaration! || entry.dts!
-      const out = entry.output || getOutputPath(outDir, dts, true)
-      outputs.push(out)
+    if (entry.input) {
+      outputs.push(entry.output || getOutputPath(outDir, entry.input))
+    }
+
+    if (entry.dts) {
+      outputs.push(
+        entry.output || getOutputPath(outDir, entry.dts, { extension: 'dts' }),
+      )
     }
 
     if (entry.template) outputs.push(entry.output)
