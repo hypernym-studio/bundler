@@ -1,32 +1,41 @@
-import { resolve } from 'node:path'
+import { resolve, isAbsolute } from 'node:path'
 import { exists, write, read } from '@hypernym/utils/fs'
 import { cyan } from '@hypernym/colors'
-import { build } from 'esbuild'
+import { build } from 'rolldown'
 import { externals } from '@/config'
 import { logger, error } from '@/utils'
 import type { ConfigLoader, Options } from '@/types'
 import type { Args } from '@/types/args'
+
+export async function getTSConfigPath(
+  cwd: string,
+  filePath = 'tsconfig.json',
+): Promise<string | undefined> {
+  const tsconfigPath = resolve(cwd, filePath)
+  const tsconfigFile = await exists(tsconfigPath)
+  if (tsconfigFile) return tsconfigPath
+}
 
 export async function loadConfig(
   cwd: string,
   filePath: string,
   defaults: Options,
 ): Promise<ConfigLoader> {
+  let tsconfigPath = await getTSConfigPath(cwd)
   const result = await build({
-    entryPoints: [resolve(cwd, filePath)],
-    bundle: true,
+    input: resolve(cwd, filePath),
     write: false,
-    format: 'esm',
-    target: 'esnext',
-    packages: 'external',
+    external: (id) => !(isAbsolute(id) || id.startsWith('.')),
+    resolve: { tsconfigFilename: tsconfigPath },
+    output: { format: 'esm' },
   })
-  const code = result.outputFiles[0].text
+  const code = result.output[0].code
   const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.mjs')
   await write(tempConfig, code)
   const content = await import(tempConfig)
   const config: Options = {
     ...defaults,
-    ...content.default,
+    ...(content.default as Options),
   }
 
   return { options: config, path: filePath }
@@ -37,8 +46,9 @@ export async function createConfigLoader(
   args: Args,
 ): Promise<ConfigLoader> {
   const pkgPath = resolve(cwd, 'package.json')
-  const pkg = await read(pkgPath).catch(error)
-  const { dependencies } = JSON.parse(pkg)
+  const pkgFile = await read(pkgPath).catch(error)
+  const { dependencies }: { dependencies: Record<string, string> } =
+    JSON.parse(pkgFile)
 
   const warnMessage = `Missing required configuration. To start bundling, add the ${cyan(
     `'bundler.config.{js,mjs,ts,mts}'`,
@@ -57,10 +67,10 @@ export async function createConfigLoader(
   }
 
   const configName = 'bundler.config'
-  const configExts: string[] = ['.ts', '.js', '.mts', '.mjs']
+  const configExts: string[] = ['.ts', '.mts', '.mjs', '.js']
 
   for (const ext of configExts) {
-    const path = `${configName}${ext}`
+    const path = resolve(cwd, `${configName}${ext}`)
     const isConfig = await exists(path)
     if (isConfig) return await loadConfig(cwd, path, defaults)
   }
