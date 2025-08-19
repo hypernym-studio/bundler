@@ -1,19 +1,30 @@
 export function getOutputPath(
   outDir: string,
   input: string,
-  dts?: boolean,
+  { extension = 'auto' }: { extension?: 'auto' | 'dts' | 'original' } = {},
 ): string {
-  const _input = input.startsWith('./') ? input.slice(2) : input
-  let output = _input.replace(_input.split('/')[0], outDir)
+  const src = input.startsWith('./') ? input.slice(2) : input
 
-  const ext = dts ? 'd.mts' : 'mjs'
-  const cts = dts ? 'd.cts' : 'cjs'
+  let output = src.includes('/')
+    ? src.replace(src.split('/')[0], outDir)
+    : `${outDir}/${src}`
 
-  if (output.endsWith('.js')) output = `${output.slice(0, -2)}${ext}`
-  else if (output.endsWith('.ts')) output = `${output.slice(0, -2)}${ext}`
-  else if (output.endsWith('.mts')) output = `${output.slice(0, -3)}${ext}`
-  else if (output.endsWith('.cts')) output = `${output.slice(0, -3)}${cts}`
+  if (extension !== 'original') {
+    const ext = output.match(/\.[^/.]+$/)?.[0] ?? ''
+    const esm = ['.js', '.mjs', '.ts', '.mts']
+    const legacy = ['.cjs', '.cts']
+    let newExt = ''
 
-  if (outDir.startsWith('./') || outDir.startsWith('../')) return output
-  else return `./${output}`
+    if (esm.includes(ext)) {
+      newExt = extension === 'dts' ? '.d.mts' : '.mjs'
+    } else if (legacy.includes(ext)) {
+      newExt = extension === 'dts' ? '.d.cts' : '.cjs'
+    }
+
+    if (newExt) output = `${output.slice(0, -ext.length)}${newExt}`
+  }
+
+  return outDir.startsWith('./') || outDir.startsWith('../')
+    ? output
+    : `./${output}`
 }
