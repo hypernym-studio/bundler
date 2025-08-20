@@ -3,7 +3,7 @@ import { dim } from '@hypernym/colors'
 import { name } from '@/bin/meta'
 
 const cl = console.log
-const separator = `/`
+const separator = `|`
 
 export const logger = {
   info: (...args: any[]): void => {
