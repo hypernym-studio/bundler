@@ -11,12 +11,14 @@
   "homepage": "https://github.com/hypernym-studio/bundler",
   "funding": "https://github.com/sponsors/ivodolenc",
   "type": "module",
-  "types": "./dist/index.d.cts",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.mjs"
+    },
+    "./plugins": {
+      "types": "./dist/plugins/index.d.mts",
+      "import": "./dist/plugins/index.mjs"
     }
   },
   "files": [
@@ -64,7 +66,7 @@
     "@hypernym/colors": "^1.0.5",
     "@hypernym/utils": "^3.4.5",
     "rolldown": "1.0.0-beta.32",
-    "rolldown-plugin-dts": "^0.15.6"
+    "rolldown-plugin-dts": "^0.15.7"
   },
   "devDependencies": {
     "@hypernym/eslint-config": "^3.6.3",
