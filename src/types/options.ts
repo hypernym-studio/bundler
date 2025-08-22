@@ -98,4 +98,20 @@ export interface Options {
    * @default undefined
    */
   minify?: boolean
+  /**
+   * Specifies the path to the `tsconfig` file.
+   *
+   * By default, if the file `tsconfig.json` exists in the project root, it will be used as the default config file.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   tsconfigPath: './path/to/tsconfig.json',
+   * })
+   * ```
+   *
+   * @default undefined
+   */
+  tsconfigPath?: string
 }
