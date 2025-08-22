@@ -1,13 +1,10 @@
 import { dim } from '@hypernym/colors'
+import { logger, formatMs, formatBytes, error } from '@/utils'
 import { version } from './meta'
 import { build } from './build'
-import { logger, formatMs, formatBytes, error } from '@/utils'
 import type { ConfigLoader } from '@/types'
 
-export async function createBuilder(
-  cwd: string,
-  config: ConfigLoader,
-): Promise<void> {
+export async function createBuilder(config: ConfigLoader): Promise<void> {
   const { options, path: configPath } = config
   const { hooks } = options
 
@@ -15,35 +12,30 @@ export async function createBuilder(
 
   await hooks?.['bundle:start']?.(options)
 
+  cl()
   logger.info(dim(`v${version}`))
   cl('Config', dim(configPath))
   cl()
-  cl('Bundling started...')
-  cl(
-    'Processing',
-    dim(`[${new Date().toLocaleTimeString()}]`),
-    'Transforming files',
-  )
+  cl('Processing specified entries...')
   cl()
 
-  await build(cwd, options)
+  await build(options)
     .then((stats) => {
-      const buildTime = dim(formatMs(stats.buildTime))
-      const buildSize = dim(formatBytes(stats.size))
-      const totalModules = stats.files.length
-      const modules =
-        totalModules > 1 ? `${totalModules} modules` : `${totalModules} module`
+      const entriesLength = options.entries.length
+      const totalEntries = `${entriesLength} ${entriesLength > 1 ? 'entries' : 'entry'}`
+      const filesLength = stats.files.length
+      const totalFiles = `${stats.files.length} file${filesLength > 1 ? 's' : ''}`
+      const buildTime = formatMs(stats.buildTime)
+      const buildSize = formatBytes(stats.size)
 
       cl()
       cl(
-        'Succeeded',
-        dim(`[${new Date().toLocaleTimeString()}]`),
-        'Module transformation is done',
+        'Stats:',
+        dim(`${totalEntries}, ${totalFiles}, ${buildSize}, ${buildTime}`),
       )
-      cl(`Bundling fully completed in ${buildTime}`)
       cl()
-      cl(`${modules} transformed. Total size is ${buildSize}`)
-      cl(`Bundle is generated and ready for production`)
+      cl('All entries successfully processed.')
+      cl('Bundle is optimized and ready for production.')
       cl()
     })
     .catch(error)
