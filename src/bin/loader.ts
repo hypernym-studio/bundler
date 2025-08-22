@@ -1,3 +1,4 @@
+import { cwd } from 'node:process'
 import { resolve, isAbsolute } from 'node:path'
 import { exists, write, read } from '@hypernym/utils/fs'
 import { cyan } from '@hypernym/colors'
@@ -17,52 +18,55 @@ export async function getTSConfigPath(
 }
 
 export async function loadConfig(
-  cwd: string,
   filePath: string,
   defaults: Options,
 ): Promise<ConfigLoader> {
-  let tsconfigPath = await getTSConfigPath(cwd)
+  const cwd = defaults.cwd!
+
   const result = await build({
     input: resolve(cwd, filePath),
     write: false,
-    external: (id) => !(isAbsolute(id) || id.startsWith('.')),
-    resolve: { tsconfigFilename: tsconfigPath },
+    external: (id) => !(isAbsolute(id) || /^(\.|@\/|~\/)/.test(id)),
+    resolve: { tsconfigFilename: defaults.tsconfigPath },
     output: { format: 'esm' },
   })
-  const code = result.output[0].code
   const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.mjs')
-  await write(tempConfig, code)
-  const content = await import(tempConfig)
-  const config: Options = {
+  await write(tempConfig, result.output[0].code)
+
+  const config: Options = (await import(tempConfig)).default
+
+  const options: Options = {
     ...defaults,
-    ...(content.default as Options),
+    ...config,
   }
 
-  return { options: config, path: filePath }
+  return { options, path: filePath }
 }
 
-export async function createConfigLoader(
-  cwd: string,
-  args: Args,
-): Promise<ConfigLoader> {
-  const pkgPath = resolve(cwd, 'package.json')
+export async function createConfigLoader(args: Args): Promise<ConfigLoader> {
+  const cwdir = args.cwd && args.cwd.trim() !== '' ? resolve(args.cwd) : cwd()
+  let tsconfigPath = await getTSConfigPath(cwdir, args.tsconfigPath)
+
+  const pkgPath = resolve(cwdir, 'package.json')
   const pkgFile = await read(pkgPath).catch(error)
   const { dependencies }: { dependencies: Record<string, string> } =
     JSON.parse(pkgFile)
+
+  const defaults: Options = {
+    cwd: cwdir,
+    tsconfigPath,
+    externals: [...Object.keys(dependencies || {}), ...externals],
+    entries: [],
+  }
 
   const warnMessage = `Missing required configuration. To start bundling, add the ${cyan(
     `'bundler.config.{js,mjs,ts,mts}'`,
   )} file to the project's root.`
 
-  const defaults: Options = {
-    externals: [...Object.keys(dependencies || {}), ...externals],
-    entries: [],
-  }
-
   if (args.config) {
-    const path = args.config
+    const path = resolve(args.config)
     const isConfig = await exists(path)
-    if (isConfig) return await loadConfig(cwd, path, defaults)
+    if (isConfig) return await loadConfig(path, defaults)
     else return logger.exit(warnMessage)
   }
 
@@ -70,9 +74,9 @@ export async function createConfigLoader(
   const configExts: string[] = ['.ts', '.mts', '.mjs', '.js']
 
   for (const ext of configExts) {
-    const path = resolve(cwd, `${configName}${ext}`)
+    const path = resolve(cwdir, `${configName}${ext}`)
     const isConfig = await exists(path)
-    if (isConfig) return await loadConfig(cwd, path, defaults)
+    if (isConfig) return await loadConfig(path, defaults)
   }
 
   return logger.exit(warnMessage)
