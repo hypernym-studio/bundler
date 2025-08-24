@@ -271,8 +271,6 @@ Specifies the module IDs or regular expressions that match module IDs to be trea
 
 The IDs and regular expressions provided in this option are applied globally across all entries.
 
-Alternatively, externals can be defined individually for each entry using the `entry.externals` property.
-
 ```ts
 // bundler.config.ts
 
@@ -280,6 +278,19 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   externals: ['id-1', 'id-2', /regexp/],
+})
+```
+
+Alternatively, externals can be defined individually for each entry using the `entry.externals` property.
+
+```ts
+export default defineConfig({
+  entries: [
+    {
+      input: './src/index.ts',
+      externals: ['id-1', 'id-2', /regexp/],
+    },
+  ],
 })
 ```
 
@@ -300,7 +311,7 @@ export default defineConfig({
 })
 ```
 
-It can also be set per entry.
+It can also be set per entry:
 
 ```ts
 export default defineConfig({
