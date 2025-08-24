@@ -20,11 +20,9 @@
 
 ## Features
 
-- Powered by Rollup
-- Written in TypeScript
+- Powered by Rolldown
 - Allows Advanced Customization
 - Provides a Powerful Hooking System
-- Supports All TS Module Resolutions
 - Exports Fully Optimized Code
 - Follows Modern Practice
 - Super Easy to Use
@@ -67,9 +65,13 @@ export default defineConfig({
 })
 ```
 
-3. Build via command:
+3. Build via commands:
 
 ```sh
+# pnpm
+pnpx hyperbundler
+
+# or npm
 npx hyperbundler
 ```
 
@@ -94,6 +96,10 @@ export default defineConfig({
 Set a custom config path via the CLI command:
 
 ```sh
+# pnpm
+pnpx hyperbundler --config hyper.config.ts
+
+# npm
 npx hyperbundler --config hyper.config.ts
 ```
 
@@ -124,7 +130,7 @@ Default transformation behaviour for all `dts` entries:
 
 ## Options
 
-All options are documented with descriptions and examples so auto-completion will be offered as you type. Simply hover over the property and see what it does in the `quickinfo`.
+All options are documented with descriptions and examples so autocompletion will be offered as you type. Simply hover over the property and see what it does in the quick info tooltip.
 
 ### entries
 
@@ -141,16 +147,14 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    { input: './src/index.ts' }, // => './dist/index.mjs'
-    { dts: './src/types.ts' }, // => './dist/types.d.mts'
+    { input: './src/index.ts' }, // outputs './dist/index.mjs'
+    { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
     // ...
   ],
 })
 ```
 
-#### Entry Chunk
-
-- [Types](./src/types/entries.ts)
+### Entry Chunk
 
 Automatically transforms `chunks` for production.
 
@@ -161,48 +165,38 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    { input: './src/index.ts' }, // => './dist/index.mjs'
+    { input: './src/index.ts' }, // outputs './dist/index.mjs'
+    {
+      input: './src/index.ts',
+      output: './out/index.js', // outputs './out/index.js'
+    },
   ],
 })
 ```
 
-#### Entry Declaration
+### Entry Dts
 
-- [Types](./src/types/entries.ts)
-
-Builds TypeScript `declaration` files (.d.ts) for production.
-
-```ts
-// bundler.config.ts
-
-import { defineConfig } from '@hypernym/bundler'
-
-export default defineConfig({
-  entries: [
-    { declaration: './src/types.ts' }, // => './dist/types.d.mts'
-  ],
-})
-```
-
-Also, it is possible to use `dts` alias.
+Builds TypeScript `declaration` files (`.d.mts`) for production.
 
 ```ts
 import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    { dts: './src/types.ts' }, // => './dist/types.d.mts'
+    { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
+    {
+      dts: './src/types.ts',
+      output: './out/types.d.ts', // outputs './out/types.d.ts'
+    },
   ],
 })
 ```
 
-#### Entry Copy
+### Entry Copy
 
-- [Types](./src/types/entries.ts)
+Copies either a single `file` or an entire `directory` structure from the source to the destination, including all subdirectories and files.
 
-Copies the single `file` or entire `directory` structure from source to destination, including subdirectories and files.
-
-This can be very useful for copying some assets that don't need a transformation process, but a simple copy paste feature.
+This is especially useful for transferring assets that don't require any transformation, just a straightforward copy-paste operation.
 
 ```ts
 // bundler.config.ts
@@ -212,20 +206,28 @@ import { defineConfig } from '@hypernym/bundler'
 export default defineConfig({
   entries: [
     {
-      copy: {
-        input: './src/path/file.ts', // or ['path-dir', 'path-file.ts', ...]
-        output: './dist/out', // path to output dir
-      },
+      // copies a single file
+      copy: './src/path/file.ts', // outputs './dist/path/file.ts'
+    },
+    {
+      // copies a single file
+      copy: './src/path/file.ts',
+      output: './dist/subdir/custom-file-name.ts',
+    },
+    {
+      // copies the entire directory
+      input: './src/path/srcdir',
+      output: './dist/outdir',
     },
   ],
 })
 ```
 
-#### Entry Template
+### Entry Template
 
-- [Types](./src/types/entries.ts)
+Specifies the content of the `template` file.
 
-Provides the ability to dynamically inject `template` content during the build phase and writes the file to the destination path defined in the output property.
+Provides the ability to dynamically inject template content during the build phase.
 
 ```ts
 // bundler.config.ts
@@ -265,11 +267,11 @@ export default defineConfig({
 - Type: `(string | RegExp)[]`
 - Default: `[/^node:/, /^@types/, /^@rollup/, /^@hypernym/, /^rollup/, ...pkg.dependencies]`
 
-Specifies the module IDs, or regular expressions to match module IDs, that should remain external to the bundle.
+Specifies the module IDs or regular expressions that match module IDs to be treated as external and excluded from the bundle.
 
-IDs and regexps from this option are applied globally to all entries.
+The IDs and regular expressions provided in this option are applied globally across all entries.
 
-Also, it is possible to define externals individually per entry (`entry.externals`).
+Alternatively, externals can be defined individually for each entry using the `entry.externals` property.
 
 ```ts
 // bundler.config.ts
@@ -279,40 +281,6 @@ import { defineConfig } from '@hypernym/bundler'
 export default defineConfig({
   externals: ['id-1', 'id-2', /regexp/],
 })
-```
-
-### alias
-
-- Type: `{ find: string | RegExp; replacement: string; }[]`
-- Default: `undefined`
-
-Specifies prefixes that will resolve imports with custom paths.
-
-Enables these `alias` by default:
-
-```ts
-// Imports module from './src/utils/index.js'
-import { module } from '@/utils' // @
-import { module } from '~/utils' // ~
-```
-
-Also, it is possible to completely override the default aliases by setting custom ones.
-
-```ts
-// bundler.config.ts
-
-import { defineConfig } from '@hypernym/bundler'
-
-export default defineConfig({
-  alias: [{ find: /^#/, replacement: resolve('./src') }],
-})
-```
-
-Now imports can be used like this:
-
-```ts
-// Imports module from './src/utils/index.js'
-import { module } from '#/utils' // #
 ```
 
 ### minify
@@ -418,14 +386,7 @@ import { plugin1, plugin2 } from './src/utils/plugins.js'
 export default defineConfig({
   hooks: {
     'build:entry:start': async (entry, stats) => {
-      // adds custom plugins for a specific entry only
-      if (entry.input?.includes('./src/index.ts')) {
-        entry.defaultPlugins = [
-          plugin1(), // adds a custom plugin before the default bundler plugins
-          ...entry.defaultPlugins, // list of default bundler plugins
-          plugin2(), // adds a custom plugin after the default bundler plugins
-        ]
-      }
+      // ...
     },
   },
 })
@@ -496,34 +457,92 @@ export default defineConfig({
 
 ## Utils
 
-### resolvePaths
+### externals
 
-- Type: `(options: ResolvePathsOptions[]): (id: string) => string`
-
-Resolves external module IDs into custom paths.
+List of global default patterns for external module identifiers.
 
 ```ts
-import { defineConfig, resolvePaths } from '@hypernym/bundler'
+import { externals } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
     {
       input: './src/index.ts',
-      externals: [/^@\/path/],
-      paths: resolvePaths([
-        // replaces `@/path` with `./path/index.mjs`
-        { find: /^@\/path/, replacement: './path/index.mjs' },
-      ]),
+      externals: [...externals, 'id', /regexp/],
     },
   ],
 })
 ```
 
-## Community
+## Plugins
 
-Feel free to ask questions or share new ideas.
+Provides built-in plugins that can be used out of the box and additionally customized as needed.
 
-Use the official [discussions](https://github.com/hypernym-studio/bundler/discussions) to get involved.
+```ts
+import {
+  aliasPlugin,
+  jsonPlugin,
+  replacePlugin,
+  dts,
+  outputPaths,
+  //...
+} from '@hypernym/bundler/plugins'
+```
+
+## Programmatic
+
+### build
+
+- Type: `function build(options: Options): Promise<BuildStats>`
+
+```ts
+import { build } from '@hypernym/bundler'
+
+await build({
+  entries: [{ input: './src/index.ts' }],
+  // ...
+})
+```
+
+## CLI
+
+### config
+
+Specifies the path to the `bundler` custom config file.
+
+```sh
+# pnpm
+pnpx hyperbundler --config hyper.config.mjs
+
+# npm
+npx hyperbundler --config hyper.config.mjs
+```
+
+### cwd
+
+Specifies the path to the project root (current working directory).
+
+```sh
+# pnpm
+pnpx hyperbundler --cwd ./custom-dir
+
+# npm
+npx hyperbundler --cwd ./custom-dir
+```
+
+### tsconfig
+
+Specifies the path to the `tsconfig` file.
+
+By default, if the file `tsconfig.json` exists in the project root, it will be used as the default config file.
+
+```sh
+# pnpm
+pnpx hyperbundler --tsconfig tsconfig.json
+
+# npm
+npx hyperbundler --tsconfig tsconfig.json
+```
 
 ## License
 
