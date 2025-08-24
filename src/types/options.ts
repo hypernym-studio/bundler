@@ -101,6 +101,14 @@ export interface Options {
   /**
    * Specifies the path to the project root (current working directory).
    *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   cwd: './dir',
+   * })
+   * ```
+   *
    * @default undefined
    */
   cwd?: string
@@ -113,11 +121,11 @@ export interface Options {
    *
    * ```ts
    * export default defineConfig({
-   *   tsconfigPath: './path/to/tsconfig.json',
+   *   tsconfig: './path/to/tsconfig.json',
    * })
    * ```
    *
    * @default undefined
    */
-  tsconfigPath?: string
+  tsconfig?: string
 }

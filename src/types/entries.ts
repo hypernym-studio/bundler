@@ -22,14 +22,26 @@ export interface EntryBase {
    */
   format?: OutputOptions['format']
   /**
-   * Specifies the module IDs, or regular expressions to match module IDs,
-   * that should remain external to the bundle.
+   * Specifies the module IDs or regular expressions that match module IDs to be treated as external and excluded from the bundle.
    *
-   * If not specified, infers the IDs from the global `options.externals` option.
+   * The IDs and regular expressions provided in this option are applied globally across all entries.
+   *
+   * Alternatively, externals can be defined individually for each entry using the `entry.externals` property.
    *
    * @default undefined
    */
   externals?: (string | RegExp)[]
+  /**
+   * Maps external module IDs to paths.
+   *
+   * @default undefined
+   */
+  paths?: {
+    find: string | RegExp
+    replacement:
+      | string
+      | ((path: string, match: RegExpExecArray | null) => string)
+  }[]
   /**
    * Specifies the string to be inserted at the beginning of the module.
    *
@@ -288,10 +300,12 @@ export interface EntryTemplate {
    * @example
    *
    * ```ts
+   * import { name, version } from './package.json'
+   *
    * export default defineConfig({
    *   entries: [
    *     {
-   *       template: `// TypeScript code...`,
+   *       template: `// Package ${name} v${version} ...`,
    *       output: './dist/template.ts',
    *     },
    *   ]
