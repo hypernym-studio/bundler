@@ -69,9 +69,9 @@ export default defineConfig({
 
 ```sh
 # pnpm
-pnpx hyperbundler
+pnpm hyperbundler
 
-# or npm
+# npm
 npx hyperbundler
 ```
 
@@ -97,7 +97,7 @@ Set a custom config path via the CLI command:
 
 ```sh
 # pnpm
-pnpx hyperbundler --config hyper.config.ts
+pnpm hyperbundler --config hyper.config.ts
 
 # npm
 npx hyperbundler --config hyper.config.ts
@@ -512,7 +512,7 @@ Specifies the path to the `bundler` custom config file.
 
 ```sh
 # pnpm
-pnpx hyperbundler --config hyper.config.mjs
+pnpm hyperbundler --config hyper.config.mjs
 
 # npm
 npx hyperbundler --config hyper.config.mjs
@@ -524,7 +524,7 @@ Specifies the path to the project root (current working directory).
 
 ```sh
 # pnpm
-pnpx hyperbundler --cwd ./custom-dir
+pnpm hyperbundler --cwd ./custom-dir
 
 # npm
 npx hyperbundler --cwd ./custom-dir
@@ -538,7 +538,7 @@ By default, if the file `tsconfig.json` exists in the project root, it will be u
 
 ```sh
 # pnpm
-pnpx hyperbundler --tsconfig tsconfig.json
+pnpm hyperbundler --tsconfig tsconfig.json
 
 # npm
 npx hyperbundler --tsconfig tsconfig.json
