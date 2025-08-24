@@ -1,6 +1,5 @@
 import type { EntryOptions } from './entries'
 import type { HooksOptions } from './hooks'
-import type { Alias } from '@rollup/plugin-alias'
 
 export interface Options {
   /**
@@ -13,8 +12,8 @@ export interface Options {
    * ```ts
    * export default defineConfig({
    *   entries: [
-   *     { input: './src/index.ts' }, // => './dist/index.mjs'
-   *     { dts: './src/types.ts' }, // => './dist/types.d.mts'
+   *     { input: './src/index.ts' }, // outputs './dist/index.mjs'
+   *     { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
    *     // ...
    *   ]
    * })
@@ -51,7 +50,7 @@ export interface Options {
    * })
    * ```
    *
-   * @default [/^node:/, /^@types/, /^@rollup/, /^@hypernym/, /^rollup/, ...pkg.dependencies]
+   * @default [/^node:/,/^@types/,/^@rollup/,/^@rolldown/,/^@hypernym/,/^rollup/,/^rolldown/,...pkg.dependencies]
    */
   externals?: (string | RegExp)[]
   /**
@@ -72,39 +71,6 @@ export interface Options {
    * @default undefined
    */
   hooks?: HooksOptions
-  /**
-   * Specifies prefixes that will resolve imports with custom paths.
-   *
-   * Enables these `alias` by default:
-   *
-   * ```ts
-   * // Imports module from './src/utils/index.js'
-   * import { module } from '@/utils' // @
-   * import { module } from '~/utils' // ~
-   * ```
-   *
-   * Also, it is possible to completely override the default aliases by setting custom ones.
-   *
-   * @example
-   *
-   * ```ts
-   * export default defineConfig({
-   *   alias: [
-   *     { find: /^#/, replacement: resolve('./src') },
-   *   ]
-   * })
-   * ```
-   *
-   * Now imports can be used like this:
-   *
-   * ```ts
-   * // Imports module from './src/utils/index.js'
-   * import { module } from '#/utils' // #
-   * ```
-   *
-   * @default undefined
-   */
-  alias?: Alias[]
   /**
    * Specifies the minification for all `chunk` entries.
    *
@@ -132,4 +98,34 @@ export interface Options {
    * @default undefined
    */
   minify?: boolean
+  /**
+   * Specifies the path to the project root (current working directory).
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   cwd: './dir',
+   * })
+   * ```
+   *
+   * @default undefined
+   */
+  cwd?: string
+  /**
+   * Specifies the path to the `tsconfig` file.
+   *
+   * By default, if the file `tsconfig.json` exists in the project root, it will be used as the default config file.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   tsconfig: './path/to/tsconfig.json',
+   * })
+   * ```
+   *
+   * @default undefined
+   */
+  tsconfig?: string
 }

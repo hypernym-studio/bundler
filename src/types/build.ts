@@ -1,6 +1,5 @@
-import type { Plugin, LogLevel, RollupLog } from 'rollup'
-import type { EntryBase, EntryChunk, EntryDeclaration } from './entries'
-import type { TransformersChunk, TransformersDeclaration } from './transformers'
+import type { LogLevel, RollupLog } from 'rolldown'
+import type { EntryBase, EntryChunk, EntryDts } from './entries'
 
 export interface BuildLogs {
   level: LogLevel
@@ -53,35 +52,20 @@ export interface BuildStats {
   files: BuildEntryStats[]
 }
 
-type PickEntryChunkOptions =
-  | 'input'
-  | 'name'
-  | 'globals'
-  | 'extend'
-  | 'minify'
-  | 'transformers'
-type PickEntryDtsOptions = 'declaration' | 'dts' | 'transformers'
+type PickEntryChunkOptions = 'input' | 'name' | 'globals' | 'extend' | 'minify'
+
+type PickEntryDtsOptions = 'dts' | 'dtsPlugin'
 
 export interface BuildEntryOptions
   extends EntryBase,
-    Pick<EntryChunk, PickEntryChunkOptions>,
-    Pick<EntryDeclaration, PickEntryDtsOptions> {
+    Partial<Pick<EntryChunk, PickEntryChunkOptions>>,
+    Partial<Pick<EntryDts, PickEntryDtsOptions>> {
   /**
-   * Specifies the path of the transformed file.
+   * Specifies the path to the processed file.
    *
    * @default undefined
    */
   output?: string
-  /**
-   * Specifies options for default plugins.
-   *
-   * @default undefined
-   */
-  transformers?: TransformersChunk & TransformersDeclaration
-  /**
-   * Specifies list of default plugins.
-   */
-  defaultPlugins: Plugin[]
 }
 
 export * from '@/bin/build'

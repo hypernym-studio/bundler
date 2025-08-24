@@ -1,22 +1,47 @@
-import type { OutputOptions, Plugin } from 'rollup'
-import type { TransformersChunk, TransformersDeclaration } from './transformers'
+import type {
+  InputOptions,
+  OutputOptions,
+  RolldownPluginOption,
+  LogLevel,
+  RollupLog,
+  LogOrStringHandler,
+} from 'rolldown'
+import type { Options as DtsOptions } from 'rolldown-plugin-dts'
+import type { BuildLogs } from './build'
 
 export interface EntryBase {
   /**
    * Specifies the format of the generated module.
    *
+   * - `'es'`, `'esm'` and `'module'` are the same format, all stand for ES module.
+   * - `'cjs'` and `'commonjs'` are the same format, all stand for CommonJS module.
+   * - `'iife'` stands for [Immediately Invoked Function Expression](https://developer.mozilla.org/en-US/docs/Glossary/IIFE).
+   * - `'umd'` stands for [Universal Module Definition](https://github.com/umdjs/umd).
+   *
    * @default 'esm'
    */
   format?: OutputOptions['format']
   /**
-   * Specifies the module IDs, or regular expressions to match module IDs,
-   * that should remain external to the bundle.
+   * Specifies the module IDs or regular expressions that match module IDs to be treated as external and excluded from the bundle.
    *
-   * If not specified, infers the IDs from the global `options.externals` option.
+   * The IDs and regular expressions provided in this option are applied globally across all entries.
+   *
+   * Alternatively, externals can be defined individually for each entry using the `entry.externals` property.
    *
    * @default undefined
    */
   externals?: (string | RegExp)[]
+  /**
+   * Maps external module IDs to paths.
+   *
+   * @default undefined
+   */
+  paths?: {
+    find: string | RegExp
+    replacement:
+      | string
+      | ((path: string, match: RegExpExecArray | null) => string)
+  }[]
   /**
    * Specifies the string to be inserted at the beginning of the module.
    *
@@ -42,44 +67,53 @@ export interface EntryBase {
    */
   outro?: OutputOptions['outro']
   /**
-   * Maps external module IDs to paths.
+   * Intercepts log messages. If not supplied, logs are printed to the console.
    *
    * @default undefined
    */
-  paths?: OutputOptions['paths']
+  onLog?: (
+    level: LogLevel,
+    log: RollupLog,
+    defaultHandler: LogOrStringHandler,
+    buildLogs: BuildLogs[],
+  ) => void
   /**
-   * Specifies custom filters that will display only certain log messages.
+   * Specifies Rolldown `resolve` options.
    *
    * @default undefined
    */
-  logFilter?: string[]
+  resolve?: InputOptions['resolve']
   /**
-   * Specifies `rollup` plugins.
-   *
-   * Adding custom plugins disables all built-in `transformers` for full customization.
+   * Specifies Rolldown `define` options.
    *
    * @default undefined
    */
-  plugins?: Plugin[]
+  define?: InputOptions['define']
+  /**
+   * Specifies Rolldown plugins.
+   *
+   * @default undefined
+   */
+  plugins?: RolldownPluginOption
 }
 
 export interface EntryChunk extends EntryBase {
   /**
-   * Specifies the path of the build source.
+   * Specifies the path to the build source.
    *
    * @example
    *
    * ```ts
    * export default defineConfig({
    *   entries: [
-   *     { input: './src/index.ts' }, // => './dist/index.mjs'
+   *     { input: './src/index.ts' }, // outputs './dist/index.mjs'
    *   ]
    * })
    * ```
    */
-  input?: string
+  input: string
   /**
-   * Specifies the path of the transformed file.
+   * Specifies the path to the processed file.
    *
    * @example
    *
@@ -88,7 +122,7 @@ export interface EntryChunk extends EntryBase {
    *   entries: [
    *     {
    *       input: './src/index.ts',
-   *       output: './out/index.js', // => './out/index.js'
+   *       output: './out/index.js', // outputs './out/index.js'
    *     },
    *   ]
    * })
@@ -97,20 +131,6 @@ export interface EntryChunk extends EntryBase {
    * @default undefined
    */
   output?: string
-  /**
-   * Specifies the built-in `transformers` options.
-   *
-   * Available transformers:
-   *
-   * - `esbuild`
-   * - `resolve`
-   * - `replace`
-   * - `json`
-   * - `alias`
-   *
-   * @default undefined
-   */
-  transformers?: TransformersChunk
   /**
    * Specifies the global variable name that representing exported bundle.
    *
@@ -139,45 +159,36 @@ export interface EntryChunk extends EntryBase {
    * @default undefined
    */
   minify?: boolean
-  declaration?: never
+
+  // Mutually exclusive props
+  // dts
   dts?: never
+  dtsPlugin?: never
+  // copy
   copy?: never
+  recursive?: never
+  filter?: never
+  // template
   template?: never
 }
 
-export interface EntryDeclaration extends EntryBase {
+export interface EntryDts extends EntryBase {
   /**
-   * Specifies the path of the TypeScript `declaration` build source.
+   * Specifies the path to the TypeScript `declaration` build source.
    *
    * @example
    *
    * ```ts
    * export default defineConfig({
    *   entries: [
-   *     { dts: './src/types.ts' }, // => './dist/types.d.mts'
+   *     { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
    *   ]
    * })
    * ```
    */
-  dts?: string
+  dts: string
   /**
-   * Specifies the path of the TypeScript `declaration` build source.
-   *
-   * Also, it is possible to use `dts` alias.
-   *
-   * @example
-   *
-   * ```ts
-   * export default defineConfig({
-   *   entries: [
-   *     { declaration: './src/types.ts' }, // => './dist/types.d.mts'
-   *   ]
-   * })
-   * ```
-   */
-  declaration?: string
-  /**
-   * Specifies the path of the TypeScript  transformed `declaration` file.
+   * Specifies the path to the processed file.
    *
    * @example
    *
@@ -186,7 +197,7 @@ export interface EntryDeclaration extends EntryBase {
    *   entries: [
    *     {
    *       dts: './src/types.ts',
-   *       output: './out/types.d.ts', // => './out/types.d.ts'
+   *       output: './out/types.d.ts', // outputs './out/types.d.ts'
    *     },
    *   ]
    * })
@@ -196,34 +207,61 @@ export interface EntryDeclaration extends EntryBase {
    */
   output?: string
   /**
-   * Specifies the built-in `transformers` options.
-   *
-   * Available transformers:
-   *
-   * - `dts`
-   * - `alias`
-   *
-   * @default undefined
+   * Specifies options for the `rolldown-plugin-dts` plugin.
    */
-  transformers?: TransformersDeclaration
+  dtsPlugin?: DtsOptions
+
+  // Mutually exclusive props
+  // chunk
   input?: never
-  copy?: never
-  template?: never
   name?: never
   globals?: never
   extend?: never
   minify?: never
+  // copy
+  copy?: never
+  recursive?: never
+  filter?: never
+  // template
+  template?: never
 }
 
-export interface CopyOptions {
+export interface EntryCopy {
   /**
-   * Specifies the path of the source.
+   * Copies either a single `file` or an entire `directory` structure from the source to the destination, including all subdirectories and files.
+   *
+   * This is especially useful for transferring assets that don't require any transformation, just a straightforward copy-paste operation.
+   *
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   entries: [
+   *     {
+   *       // copies a single file
+   *       copy: './src/path/file.ts', // outputs './dist/path/file.ts'
+   *     },
+   *     {
+   *       // copies a single file
+   *       copy: './src/path/file.ts',
+   *       output: './dist/subdir/custom-file-name.ts',
+   *     },
+   *     {
+   *       // copies the entire directory
+   *       input: './src/path/srcdir',
+   *       output: './dist/outdir',
+   *     },
+   *   ]
+   * })
+   * ```
+   *
+   * @default undefined
    */
-  input: string | string[]
+  copy: string
   /**
-   * Specifies the path of the destination directory.
+   * Specifies the path to the destination file or directory.
    */
-  output: string
+  output?: string
   /**
    * Copy directories recursively.
    *
@@ -238,40 +276,19 @@ export interface CopyOptions {
    * @default undefined
    */
   filter?(source: string, destination: string): boolean
-}
 
-export interface EntryCopy {
-  /**
-   * Copies the single `file` or entire `directory` structure from source to destination, including subdirectories and files.
-   *
-   * This can be very useful for copying some assets that don't need a transformation process, but a simple copy paste feature.
-   *
-   * @example
-   *
-   * ```ts
-   * export default defineConfig({
-   *   entries: [
-   *     {
-   *       copy: {
-   *         input: './src/path/file.ts', // or ['path-dir', 'path-file.ts', ...]
-   *         output: './dist/out', // path to output dir
-   *       }
-   *     }
-   *   ]
-   * })
-   * ```
-   *
-   * @default undefined
-   */
-  copy?: CopyOptions
+  // Mutually exclusive props
+  // chunk
   input?: never
-  declaration?: never
-  dts?: never
-  template?: never
   name?: never
   globals?: never
   extend?: never
   minify?: never
+  // dts
+  dts?: never
+  dtsPlugin?: never
+  // template
+  template?: never
 }
 
 export interface EntryTemplate {
@@ -283,10 +300,12 @@ export interface EntryTemplate {
    * @example
    *
    * ```ts
+   * import { name, version } from './package.json'
+   *
    * export default defineConfig({
    *   entries: [
    *     {
-   *       template: `// TypeScript code...`,
+   *       template: `// Package ${name} v${version} ...`,
    *       output: './dist/template.ts',
    *     },
    *   ]
@@ -295,21 +314,24 @@ export interface EntryTemplate {
    */
   template: string
   /**
-   * Specifies the path of the transformed `template` file.
+   * Specifies the path to the destination file.
    */
   output: string
+
+  // Mutually exclusive props
+  // chunk
   input?: never
-  declaration?: never
-  dts?: never
-  copy?: never
   name?: never
   globals?: never
   extend?: never
   minify?: never
+  // dts
+  dts?: never
+  dtsPlugin?: never
+  // copy
+  copy?: never
+  recursive?: never
+  filter?: never
 }
 
-export type EntryOptions =
-  | EntryChunk
-  | EntryDeclaration
-  | EntryCopy
-  | EntryTemplate
+export type EntryOptions = EntryChunk | EntryDts | EntryCopy | EntryTemplate

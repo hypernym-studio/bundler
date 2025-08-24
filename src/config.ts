@@ -1,7 +1,7 @@
 import type { Options } from '@/types/options'
 
 /**
- * List of global defaults for externals.
+ * List of global default patterns for external module identifiers.
  *
  * @example
  *
@@ -22,12 +22,16 @@ export const externals: RegExp[] = [
   /^node:/,
   /^@types/,
   /^@rollup/,
+  /^@rolldown/,
   /^@hypernym/,
   /^rollup/,
+  /^rolldown/,
 ]
 
 /**
- * `Hyperbundler` automatically detects custom configuration from the project root that can override or extend the build behavior.
+ * ESM & TS module bundler.
+ *
+ * Automatically detects a custom configuration file at the project root, which can override or extend the build behavior.
  *
  * Configuration file also accepts `.js`, `.mjs`, `.ts`, `.mts` formats.
  *
@@ -40,6 +44,8 @@ export const externals: RegExp[] = [
  *   // ...
  * })
  * ```
+ *
+ * @see [Repository](https://github.com/hypernym-studio/bundler)
  */
 export function defineConfig(options: Options): Options {
   return options

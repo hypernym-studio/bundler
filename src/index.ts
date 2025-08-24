@@ -1,2 +1,2 @@
-export * from './config'
-export * from './utils/resolve-paths'
+export * from '@/config'
+export * from '@/bin/build'

@@ -1,85 +1,54 @@
+import { cwd } from 'node:process'
 import { resolve, parse } from 'node:path'
 import { stat } from 'node:fs/promises'
 import { dim } from '@hypernym/colors'
-import { write, copy, readdir } from '@hypernym/utils/fs'
-import { isObject, isString, isUndefined } from '@hypernym/utils'
-import { rollup } from 'rollup'
-import { getLogFilter } from 'rollup/getLogFilter'
-import replacePlugin from '@rollup/plugin-replace'
-import jsonPlugin from '@rollup/plugin-json'
-import resolvePlugin from '@rollup/plugin-node-resolve'
-import aliasPlugin from '@rollup/plugin-alias'
-import { dts as dtsPlugin } from 'rollup-plugin-dts'
-import { esbuild as esbuildPlugin } from '@/utils/plugins/esbuild'
-import {
-  getOutputPath,
-  getLongestOutput,
-  formatMs,
-  formatBytes,
-  error,
-} from '@/utils'
-import type { ModuleFormat } from 'rollup'
-import type { RollupAliasOptions } from '@rollup/plugin-alias'
-import type { Options, BuildStats, BuildLogs } from '@/types'
+import { isUndefined } from '@hypernym/utils'
+import { readdir, write, copy } from '@hypernym/utils/fs'
+import { rolldown } from 'rolldown'
+import { dts as dtsPlugin } from 'rolldown-plugin-dts'
+import { getOutputPath, formatMs, formatBytes, error } from '@/utils'
+import { outputPaths } from '@/plugins'
+import type { ModuleFormat } from 'rolldown'
+import type { Options, BuildEntryStats, BuildStats, BuildLogs } from '@/types'
 
-function logModuleStats(
-  file: {
-    format: string
-    path: string
-    buildTime: number
-    size: number
-    logs: BuildLogs[]
-  },
-  longestOutput: number,
-) {
+function logEntryStats(stats: BuildEntryStats): void {
   const cl = console.log
-  const base = parse(file.path).base
-  const path = file.path.replace(base, '')
-  let format = file.format
+  const base = parse(stats.path).base
+  const path = stats.path.replace(base, '')
+  let format = stats.format
 
-  if (format.includes('system')) format = 'sys'
   if (format === 'commonjs') format = 'cjs'
-  if (format === 'module') format = 'esm'
+  if (format === 'es' || format === 'module') format = 'esm'
 
-  longestOutput = longestOutput + 2
-  const ansiCode = 9
   const pathDim = dim(path)
   const output = pathDim + base
-  const pathDimNoAnsi = pathDim.length - ansiCode
-  const difference = longestOutput - pathDimNoAnsi - base.length
-  const padLength = output.length + difference
+  const outputLength = output.length + 2
 
   cl(
-    dim('+'),
+    '▸',
     format.padEnd(5),
-    output.padEnd(padLength),
-    dim('time'),
-    formatMs(file.buildTime).padEnd(7),
-    dim('size'),
-    formatBytes(file.size),
+    output.padEnd(outputLength),
+    dim(`[${formatBytes(stats.size)}, ${formatMs(stats.buildTime)}]`),
   )
 
-  if (file.logs) {
-    for (const log of file.logs) {
+  if (stats.logs) {
+    for (const log of stats.logs) {
       cl(
-        dim('!'),
+        '!',
         log.level.padEnd(5),
-        output.padEnd(padLength),
+        output.padEnd(outputLength),
         dim(log.log.message),
       )
     }
   }
 }
 
-export async function build(
-  cwd: string,
-  options: Options,
-): Promise<BuildStats> {
-  const { outDir = 'dist', hooks } = options
+export async function build(options: Options): Promise<BuildStats> {
+  const { cwd: cwdir = cwd(), outDir = 'dist', tsconfig, hooks } = options
 
   let start = 0
   const buildStats: BuildStats = {
-    cwd,
+    cwd: cwdir,
     size: 0,
     buildTime: 0,
     files: [],
@@ -88,200 +57,101 @@ export async function build(
   await hooks?.['build:start']?.(options, buildStats)
 
   if (options.entries) {
-    const longestOutput = getLongestOutput(outDir, options.entries)
-
     start = Date.now()
-
-    const aliasDir = resolve(cwd, './src')
-    let aliasOptions: RollupAliasOptions = {
-      entries: options.alias || [
-        { find: '@', replacement: aliasDir },
-        { find: '~', replacement: aliasDir },
-      ],
-    }
 
     for (const entry of options.entries) {
       const entryStart = Date.now()
 
-      if (entry.copy) {
-        const _entry = {
-          input: isString(entry.copy.input)
-            ? [entry.copy.input]
-            : entry.copy.input,
-          output: entry.copy.output,
-          recursive: entry.copy.recursive || true,
-          filter: entry.copy.filter,
-        }
-        const buildLogs: BuildLogs[] = []
-
-        for (const copyInput of _entry.input) {
-          const fileSrc = resolve(cwd, copyInput)
-          const fileDist = resolve(cwd, _entry.output, copyInput)
-
-          await copy(fileSrc, fileDist, {
-            recursive: _entry.recursive,
-            filter: _entry.filter,
-          }).catch(error)
-
-          const stats = await stat(fileDist)
-          let totalSize = 0
-
-          if (!stats.isDirectory()) totalSize = stats.size
-          else {
-            const files = await readdir(fileDist)
-            for (const file of files) {
-              const filePath = resolve(fileDist, file)
-              const fileStat = await stat(filePath)
-              totalSize = totalSize + fileStat.size
-            }
-          }
-
-          const parseInput = (path: string): string => {
-            if (path.startsWith('./')) return path.slice(2)
-            else return path
-          }
-
-          const parseOutput = (path: string): string => {
-            if (path.startsWith('./')) return path
-            else return `./${path}`
-          }
-
-          const fileStats = {
-            cwd,
-            path: `${parseOutput(_entry.output)}/${parseInput(copyInput)}`,
-            size: totalSize,
-            buildTime: Date.now() - entryStart,
-            format: 'copy',
-            logs: buildLogs,
-          }
-
-          buildStats.files.push(fileStats)
-          buildStats.size = buildStats.size + stats.size
-
-          logModuleStats(fileStats, longestOutput)
-        }
-      }
-
       if (entry.input) {
-        const logFilter = getLogFilter(entry.logFilter || [])
+        const buildLogs: BuildLogs[] = []
 
         const _output = entry.output || getOutputPath(outDir, entry.input)
-        let _format: ModuleFormat = 'esm'
-        if (_output.endsWith('.cjs')) _format = 'cjs'
+        let format: ModuleFormat = entry.format || 'esm'
+        if (_output.endsWith('.cjs')) format = 'cjs'
 
-        const buildLogs: BuildLogs[] = []
         const _entry = {
+          ...entry,
           input: entry.input,
           output: _output,
-          externals: entry.externals || options.externals,
-          format: entry.format || _format,
-          ...entry,
-          defaultPlugins: [
-            esbuildPlugin({
-              minify: !isUndefined(entry.minify)
-                ? entry.minify
-                : options.minify,
-              ...entry.transformers?.esbuild,
-            }),
-          ],
+          format,
+          externals: entry.externals || options.externals!,
+          minify: !isUndefined(entry.minify) ? entry.minify : options.minify,
         }
 
-        if (!entry.plugins) {
-          if (_entry.transformers?.json) {
-            const jsonOptions = isObject(_entry.transformers.json)
-              ? _entry.transformers.json
-              : undefined
-            _entry.defaultPlugins.push(jsonPlugin(jsonOptions))
-          }
+        const input = resolve(cwdir, _entry.input)
+        const output = resolve(cwdir, _entry.output)
 
-          if (_entry.transformers?.replace) {
-            _entry.defaultPlugins.unshift(
-              replacePlugin({
-                preventAssignment: true,
-                ..._entry.transformers.replace,
-              }),
-            )
-          }
-
-          if (_entry.transformers?.resolve) {
-            const resolveOptions = isObject(_entry.transformers.resolve)
-              ? _entry.transformers.resolve
-              : undefined
-            _entry.defaultPlugins.unshift(resolvePlugin(resolveOptions))
-          }
-
-          _entry.defaultPlugins.unshift(
-            aliasPlugin(_entry.transformers?.alias || aliasOptions),
-          )
-        }
-
-        const fileStats = {
-          cwd,
+        const entryStats: BuildEntryStats = {
+          cwd: cwdir,
           path: _entry.output,
           size: 0,
           buildTime: entryStart,
-          format: _entry.format,
+          format,
           logs: buildLogs,
         }
 
-        await hooks?.['build:entry:start']?.(_entry, fileStats)
+        await hooks?.['build:entry:start']?.(_entry, entryStats)
 
-        const _build = await rollup({
-          input: resolve(cwd, _entry.input),
+        const bundle = await rolldown({
+          input,
           external: _entry.externals,
-          plugins: _entry.plugins || _entry.defaultPlugins,
-          onLog: (level, log) => {
-            if (logFilter(log)) buildLogs.push({ level, log })
+          plugins: _entry.plugins,
+          onLog: (level, log, handler) => {
+            if (_entry.onLog) _entry.onLog(level, log, handler, buildLogs)
+            else buildLogs.push({ level, log })
           },
+          resolve: {
+            ..._entry.resolve,
+            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfig,
+          },
+          define: _entry.define,
         })
-        await _build.write({
-          file: resolve(cwd, _entry.output),
+        await bundle.write({
+          file: output,
+          minify: _entry.minify,
           format: _entry.format,
           banner: _entry.banner,
           footer: _entry.footer,
           intro: _entry.intro,
           outro: _entry.outro,
-          paths: _entry.paths,
           name: _entry.name,
           globals: _entry.globals,
           extend: _entry.extend,
+          plugins: _entry.paths ? [outputPaths(_entry.paths)] : undefined,
         })
-        const stats = await stat(resolve(cwd, _entry.output))
 
-        fileStats.size = stats.size
-        fileStats.buildTime = Date.now() - entryStart
-        fileStats.logs = buildLogs
+        const stats = await stat(output)
 
-        buildStats.files.push(fileStats)
+        entryStats.size = stats.size
+        entryStats.buildTime = Date.now() - entryStart
+        entryStats.logs = buildLogs
+
+        buildStats.files.push(entryStats)
         buildStats.size = buildStats.size + stats.size
 
-        logModuleStats(fileStats, longestOutput)
+        logEntryStats(entryStats)
 
-        await hooks?.['build:entry:end']?.(_entry, fileStats)
+        await hooks?.['build:entry:end']?.(_entry, entryStats)
       }
 
-      if (entry.dts || entry.declaration) {
-        const logFilter = getLogFilter(entry.logFilter || [])
+      if (entry.dts) {
         const buildLogs: BuildLogs[] = []
-        const dts = entry.dts! || entry.declaration!
 
         const _entry = {
-          dts,
-          output: entry.output || getOutputPath(outDir, dts, true),
-          externals: entry.externals || options.externals,
-          format: entry.format || 'esm',
           ...entry,
-          defaultPlugins: [dtsPlugin(entry.transformers?.dts)],
+          output:
+            entry.output ||
+            getOutputPath(outDir, entry.dts, { extension: 'dts' }),
+          externals: entry.externals || options.externals!,
+          format: entry.format || 'esm',
+          plugins: [dtsPlugin({ ...entry.dtsPlugin, emitDtsOnly: true })],
         }
 
-        if (!entry.plugins) {
-          _entry.defaultPlugins.unshift(
-            aliasPlugin(_entry.transformers?.alias || aliasOptions),
-          )
-        }
+        const input = resolve(cwdir, _entry.dts)
+        const output = resolve(cwdir, _entry.output)
 
-        const fileStats = {
-          cwd,
+        const entryStats: BuildEntryStats = {
+          cwd: cwdir,
           path: _entry.output,
           size: 0,
           buildTime: entryStart,
@@ -289,59 +159,118 @@ export async function build(
           logs: buildLogs,
         }
 
-        await hooks?.['build:entry:start']?.(_entry, fileStats)
+        await hooks?.['build:entry:start']?.(_entry, entryStats)
 
-        const _build = await rollup({
-          input: resolve(cwd, _entry.dts),
+        const bundle = await rolldown({
+          input,
           external: _entry.externals,
-          plugins: _entry.plugins || _entry.defaultPlugins,
-          onLog: (level, log) => {
-            if (logFilter(log)) buildLogs.push({ level, log })
+          plugins: _entry.plugins,
+          onLog: (level, log, handler) => {
+            if (_entry.onLog) _entry.onLog(level, log, handler, buildLogs)
+            else buildLogs.push({ level, log })
           },
+          resolve: {
+            ..._entry.resolve,
+            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfig,
+          },
+          define: _entry.define,
         })
-        await _build.write({
-          file: resolve(cwd, _entry.output),
+        const generated = await bundle.generate({
           format: _entry.format,
           banner: _entry.banner,
           footer: _entry.footer,
           intro: _entry.intro,
           outro: _entry.outro,
-          paths: _entry.paths,
+          name: _entry.name,
+          globals: _entry.globals,
+          extend: _entry.extend,
+          plugins: _entry.paths ? [outputPaths(_entry.paths)] : undefined,
         })
-        const stats = await stat(resolve(cwd, _entry.output))
+        await write(_entry.output, generated.output[0].code)
 
-        fileStats.size = stats.size
-        fileStats.buildTime = Date.now() - entryStart
-        fileStats.logs = buildLogs
+        const stats = await stat(output)
 
-        buildStats.files.push(fileStats)
+        entryStats.size = stats.size
+        entryStats.buildTime = Date.now() - entryStart
+        entryStats.logs = buildLogs
+
+        buildStats.files.push(entryStats)
         buildStats.size = buildStats.size + stats.size
 
-        logModuleStats(fileStats, longestOutput)
+        logEntryStats(entryStats)
 
-        await hooks?.['build:entry:end']?.(_entry, fileStats)
+        await hooks?.['build:entry:end']?.(_entry, entryStats)
+      }
+
+      if (entry.copy) {
+        const outputPath = getOutputPath(outDir, entry.copy, {
+          extension: 'original',
+        })
+
+        const _entry = {
+          input: entry.copy,
+          output: entry.output || outputPath,
+        }
+
+        const input = resolve(cwdir, _entry.input)
+        const output = resolve(cwdir, _entry.output)
+
+        await copy(input, output, {
+          recursive: entry.recursive || true,
+          filter: entry.filter,
+        }).catch(error)
+
+        const stats = await stat(output)
+        let totalSize = 0
+
+        if (!stats.isDirectory()) totalSize = stats.size
+        else {
+          const files = await readdir(output)
+          for (const file of files) {
+            const filePath = resolve(output, file)
+            const fileStat = await stat(filePath)
+            totalSize = totalSize + fileStat.size
+          }
+        }
+
+        const parseOutput = (path: string): string => {
+          if (path.startsWith('./')) return path
+          else return `./${path}`
+        }
+
+        const entryStats: BuildEntryStats = {
+          cwd: cwdir,
+          path: parseOutput(_entry.output),
+          size: totalSize,
+          buildTime: Date.now() - entryStart,
+          format: 'copy',
+          logs: [],
+        }
+
+        buildStats.files.push(entryStats)
+        buildStats.size = buildStats.size + stats.size
+
+        logEntryStats(entryStats)
       }
 
       if (entry.template && entry.output) {
-        const buildLogs: BuildLogs[] = []
-
         await write(entry.output, entry.template)
 
-        const stats = await stat(resolve(cwd, entry.output))
+        const stats = await stat(resolve(cwdir, entry.output))
 
-        const fileStats = {
-          cwd,
+        const entryStats: BuildEntryStats = {
+          cwd: cwdir,
           path: entry.output,
           size: stats.size,
           buildTime: Date.now() - entryStart,
           format: 'tmp',
-          logs: buildLogs,
+          logs: [],
         }
 
-        buildStats.files.push(fileStats)
+        buildStats.files.push(entryStats)
         buildStats.size = buildStats.size + stats.size
 
-        logModuleStats(fileStats, longestOutput)
+        logEntryStats(entryStats)
       }
     }
 

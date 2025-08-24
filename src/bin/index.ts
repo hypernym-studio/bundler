@@ -1,21 +1,19 @@
 #!/usr/bin/env node
 
-import { cwd as _cwd } from 'node:process'
 import { createArgs } from '@hypernym/args'
+import { error } from '@/utils'
 import { createConfigLoader } from './loader'
 import { createBuilder } from './builder'
-import { error } from '@/utils'
 import type { Args } from '@/types/args'
 
 async function main() {
-  const cwd = _cwd()
   const args = createArgs<Args>({
     alias: { config: 'c' },
   })
 
-  const config = await createConfigLoader(cwd, args)
+  const config = await createConfigLoader(args)
 
-  await createBuilder(cwd, config)
+  await createBuilder(config)
 }
 
 main().catch(error)
