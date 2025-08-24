@@ -4,3 +4,5 @@ export interface OutputPathsEntry {
     | string
     | ((path: string, match: RegExpExecArray | null) => string)
 }
+
+export * from './'
