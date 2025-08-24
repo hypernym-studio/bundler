@@ -7,6 +7,7 @@ import { readdir, write, copy } from '@hypernym/utils/fs'
 import { rolldown } from 'rolldown'
 import { dts as dtsPlugin } from 'rolldown-plugin-dts'
 import { getOutputPath, formatMs, formatBytes, error } from '@/utils'
+import { outputPaths } from '@/plugins'
 import type { ModuleFormat } from 'rolldown'
 import type { Options, BuildEntryStats, BuildStats, BuildLogs } from '@/types'
 
@@ -43,7 +44,7 @@ function logEntryStats(stats: BuildEntryStats): void {
 }
 
 export async function build(options: Options): Promise<BuildStats> {
-  const { cwd: cwdir = cwd(), outDir = 'dist', tsconfigPath, hooks } = options
+  const { cwd: cwdir = cwd(), outDir = 'dist', tsconfig, hooks } = options
 
   let start = 0
   const buildStats: BuildStats = {
@@ -101,7 +102,7 @@ export async function build(options: Options): Promise<BuildStats> {
           },
           resolve: {
             ..._entry.resolve,
-            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfigPath,
+            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfig,
           },
           define: _entry.define,
         })
@@ -116,6 +117,7 @@ export async function build(options: Options): Promise<BuildStats> {
           name: _entry.name,
           globals: _entry.globals,
           extend: _entry.extend,
+          plugins: _entry.paths ? [outputPaths(_entry.paths)] : undefined,
         })
 
         const stats = await stat(output)
@@ -169,7 +171,7 @@ export async function build(options: Options): Promise<BuildStats> {
           },
           resolve: {
             ..._entry.resolve,
-            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfigPath,
+            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfig,
           },
           define: _entry.define,
         })
@@ -182,6 +184,7 @@ export async function build(options: Options): Promise<BuildStats> {
           name: _entry.name,
           globals: _entry.globals,
           extend: _entry.extend,
+          plugins: _entry.paths ? [outputPaths(_entry.paths)] : undefined,
         })
         await write(_entry.output, generated.output[0].code)
 

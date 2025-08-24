@@ -27,7 +27,7 @@ export async function loadConfig(
     input: resolve(cwd, filePath),
     write: false,
     external: (id) => !(isAbsolute(id) || /^(\.|@\/|~\/)/.test(id)),
-    resolve: { tsconfigFilename: defaults.tsconfigPath },
+    resolve: { tsconfigFilename: defaults.tsconfig },
     output: { format: 'esm' },
   })
   const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.mjs')
@@ -45,7 +45,7 @@ export async function loadConfig(
 
 export async function createConfigLoader(args: Args): Promise<ConfigLoader> {
   const cwdir = args.cwd && args.cwd.trim() !== '' ? resolve(args.cwd) : cwd()
-  let tsconfigPath = await getTSConfigPath(cwdir, args.tsconfigPath)
+  const tsconfig = await getTSConfigPath(cwdir, args.tsconfig)
 
   const pkgPath = resolve(cwdir, 'package.json')
   const pkgFile = await read(pkgPath).catch(error)
@@ -54,7 +54,7 @@ export async function createConfigLoader(args: Args): Promise<ConfigLoader> {
 
   const defaults: Options = {
     cwd: cwdir,
-    tsconfigPath,
+    tsconfig,
     externals: [...Object.keys(dependencies || {}), ...externals],
     entries: [],
   }
