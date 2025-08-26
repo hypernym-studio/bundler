@@ -105,32 +105,32 @@ npx hyperbundler --config hyper.config.ts
 
 ## Formats
 
-During transformation, file formats are automatically resolved and in most cases there is no need for additional configuration.
+During transformation, file formats are automatically resolved, and in most cases, no additional configuration is required.
 
-`Hyperbundler` module environment for generated files defaults to `esm`, which means the outputs will have a `.mjs` extension unless otherwise specified. For TypeScript declarations, the appropriate extension will be `.d.mts`.
+The default module environment for generated files is `esm`, which means output files will have a `.mjs` extension unless otherwise specified. For TypeScript declarations, the corresponding extension will be `.d.mts`.
 
-Formats can also be explicitly specified for each entry, if necessary.
+Formats can also be explicitly specified for each entry, if needed.
 
 ### Inputs
 
-Default transformation behaviour for all `chunk` entries:
+Default transformation behavior for all `chunk` entries:
 
-- `./srcDir/file.js` resolves to `./outDir/file.mjs`
-- `./srcDir/file.mjs` resolves to `./outDir/file.mjs`
-- `./srcDir/file.cjs` resolves to `./outDir/file.cjs`
-- `./srcDir/file.ts` resolves to `./outDir/file.mjs`
-- `./srcDir/file.mts` resolves to `./outDir/file.mjs`
-- `./srcDir/file.cts` resolves to `./outDir/file.cjs`
+- `./srcDir/file.js` → `./outDir/file.mjs`
+- `./srcDir/file.mjs` → `./outDir/file.mjs`
+- `./srcDir/file.cjs` → `./outDir/file.cjs`
+- `./srcDir/file.ts` → `./outDir/file.mjs`
+- `./srcDir/file.mts` → `./outDir/file.mjs`
+- `./srcDir/file.cts` → `./outDir/file.cjs`
 
 ### Declarations
 
-Default transformation behaviour for all `dts` entries:
+Default transformation behavior for all `dts` entries:
 
-- `./srcDir/file.ts` resolves to `./outDir/file.d.mts`
+- `./srcDir/file.ts` → `./outDir/file.d.mts`
 
 ## Options
 
-All options are documented with descriptions and examples so autocompletion will be offered as you type. Simply hover over the property and see what it does in the quick info tooltip.
+All options come with descriptions and examples. As you type, you’ll get suggestions and can see quick info by hovering over any property.
 
 ### entries
 
@@ -247,7 +247,7 @@ export default defineConfig({
 
 ### outDir
 
-- Type: `string`
+- Type: `string | undefined`
 - Default: `dist`
 
 Specifies the output directory for production bundle.
@@ -258,14 +258,14 @@ Specifies the output directory for production bundle.
 import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
-  outDir: 'output',
+  outDir: './output',
 })
 ```
 
 ### externals
 
-- Type: `(string | RegExp)[]`
-- Default: `[/^node:/, /^@types/, /^@rollup/, /^@hypernym/, /^rollup/, ...pkg.dependencies]`
+- Type: `(string | RegExp)[] | undefined`
+- Default: `[/^node:/, /^@types/, /^@rollup/, /^@rolldown/, /^@hypernym/, /^rollup/, /^rolldown/, ...pkg.dependencies]`
 
 Specifies the module IDs or regular expressions that match module IDs to be treated as external and excluded from the bundle.
 
@@ -296,10 +296,15 @@ export default defineConfig({
 
 ### minify
 
-- Type: `boolean`
+- Type: `boolean | 'dce-only' | MinifyOptions | undefined`
 - Default: `undefined`
 
-Specifies the minification for all `chunk` entries.
+Controls code minification for all `chunk` entries.
+
+- `true`: Enable full minification including code compression and dead code elimination.
+- `false`: Disable minification (default).
+- `'dce-only'`: Only perform dead code elimination without code compression.
+- `MinifyOptions`: Fine-grained control over minification settings.
 
 ```ts
 // bundler.config.ts
@@ -339,7 +344,7 @@ List of lifecycle hooks that are called at various phases:
 
 ### bundle:start
 
-- Type: `(options: Options) => void | Promise<void>`
+- Type: `(options: Options) => void | Promise<void> | undefined`
 - Default: `undefined`
 
 Called at the beginning of bundling.
@@ -360,7 +365,7 @@ export default defineConfig({
 
 ### build:start
 
-- Type: `(options: Options, stats: BuildStats) => void | Promise<void>`
+- Type: `(options: Options, stats: BuildStats) => void | Promise<void> | undefined`
 - Default: `undefined`
 
 Called at the beginning of building.
@@ -381,7 +386,7 @@ export default defineConfig({
 
 ### build:entry:start
 
-- Type: `(entry: BuildEntryOptions, stats: BuildEntryStats) => void | Promise<void>`
+- Type: `(entry: BuildEntryOptions, stats: BuildEntryStats) => void | Promise<void> | undefined`
 - Default: `undefined`
 
 Called on each entry just before the build process.
@@ -405,7 +410,7 @@ export default defineConfig({
 
 ### build:entry:end
 
-- Type: `(entry: BuildEntryOptions, stats: BuildEntryStats) => void | Promise<void>`
+- Type: `(entry: BuildEntryOptions, stats: BuildEntryStats) => void | Promise<void> | undefined`
 - Default: `undefined`
 
 Called on each entry right after the build process is completed.
@@ -426,7 +431,7 @@ export default defineConfig({
 
 ### build:end
 
-- Type: `(options: Options, stats: BuildStats) => void | Promise<void>`
+- Type: `(options: Options, stats: BuildStats) => void | Promise<void> | undefined`
 - Default: `undefined`
 
 Called right after building is complete.
@@ -447,7 +452,7 @@ export default defineConfig({
 
 ### bundle:end
 
-- Type: `(options: Options) => void | Promise<void>`
+- Type: `(options: Options) => void | Promise<void> | undefined`
 - Default: `undefined`
 
 Called right after bundling is complete.

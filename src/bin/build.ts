@@ -6,9 +6,15 @@ import { isUndefined } from '@hypernym/utils'
 import { readdir, write, copy } from '@hypernym/utils/fs'
 import { rolldown } from 'rolldown'
 import { dts as dtsPlugin } from 'rolldown-plugin-dts'
-import { getOutputPath, formatMs, formatBytes, error } from '@/utils'
+import {
+  getOutputPath,
+  parseOutputPath,
+  formatMs,
+  formatBytes,
+  error,
+} from '@/utils'
 import { outputPaths } from '@/plugins'
-import type { ModuleFormat } from 'rolldown'
+import type { InputOptions, OutputOptions, ModuleFormat } from 'rolldown'
 import type { Options, BuildEntryStats, BuildStats, BuildLogs } from '@/types'
 
 function logEntryStats(stats: BuildEntryStats): void {
@@ -44,7 +50,15 @@ function logEntryStats(stats: BuildEntryStats): void {
 }
 
 export async function build(options: Options): Promise<BuildStats> {
-  const { cwd: cwdir = cwd(), outDir = 'dist', tsconfig, hooks } = options
+  const {
+    cwd: cwdir = cwd(),
+    outDir = 'dist',
+    entries,
+    externals,
+    tsconfig,
+    hooks,
+    minify,
+  } = options
 
   let start = 0
   const buildStats: BuildStats = {
@@ -56,71 +70,88 @@ export async function build(options: Options): Promise<BuildStats> {
 
   await hooks?.['build:start']?.(options, buildStats)
 
-  if (options.entries) {
+  if (entries) {
     start = Date.now()
 
-    for (const entry of options.entries) {
+    for (const entry of entries) {
       const entryStart = Date.now()
 
-      if (entry.input) {
+      if (entry.input || entry.dts) {
         const buildLogs: BuildLogs[] = []
 
-        const _output = entry.output || getOutputPath(outDir, entry.input)
+        const isChunk = !isUndefined(entry.input)
+
+        const outputRawPath =
+          parseOutputPath(entry.output) ||
+          getOutputPath(outDir, entry.input! || entry.dts!, {
+            extension: isChunk ? 'auto' : 'dts',
+          })
+        const outputResolvePath = resolve(cwdir, outputRawPath)
+
         let format: ModuleFormat = entry.format || 'esm'
-        if (_output.endsWith('.cjs')) format = 'cjs'
+        if (outputRawPath.endsWith('.cjs')) format = 'cjs'
 
-        const _entry = {
-          ...entry,
-          input: entry.input,
-          output: _output,
+        const entryInput = {
+          input: resolve(cwdir, entry.input! || entry.dts!),
+          external: entry.externals || externals!,
+          plugins: isChunk
+            ? entry.plugins
+            : entry.plugins || [
+                dtsPlugin({ ...entry.dtsPlugin, emitDtsOnly: true }),
+              ],
+          onLog: (level, log, handler) => {
+            if (entry.onLog) entry.onLog(level, log, handler, buildLogs)
+            else buildLogs.push({ level, log })
+          },
+          resolve: entry.resolve,
+          define: entry.define,
+          inject: entry.inject,
+          tsconfig: entry.tsconfig || tsconfig,
+        } satisfies InputOptions
+
+        const entryOutput = {
+          file: isChunk ? outputResolvePath : undefined,
+          minify: isChunk
+            ? !isUndefined(entry.minify)
+              ? entry.minify
+              : minify
+            : undefined,
           format,
-          externals: entry.externals || options.externals!,
-          minify: !isUndefined(entry.minify) ? entry.minify : options.minify,
-        }
+          banner: entry.banner,
+          footer: entry.footer,
+          intro: entry.intro,
+          outro: entry.outro,
+          name: entry.name,
+          globals: entry.globals,
+          extend: entry.extend,
+          plugins: entry.paths ? [outputPaths(entry.paths)] : undefined,
+        } satisfies OutputOptions
 
-        const input = resolve(cwdir, _entry.input)
-        const output = resolve(cwdir, _entry.output)
+        const entryOptions = {
+          ...entryInput,
+          ...entryOutput,
+          externals: entryInput.external,
+        }
 
         const entryStats: BuildEntryStats = {
           cwd: cwdir,
-          path: _entry.output,
+          path: outputRawPath,
           size: 0,
           buildTime: entryStart,
-          format,
+          format: isChunk ? format : 'dts',
           logs: buildLogs,
         }
 
-        await hooks?.['build:entry:start']?.(_entry, entryStats)
+        await hooks?.['build:entry:start']?.(entryOptions, entryStats)
 
-        const bundle = await rolldown({
-          input,
-          external: _entry.externals,
-          plugins: _entry.plugins,
-          onLog: (level, log, handler) => {
-            if (_entry.onLog) _entry.onLog(level, log, handler, buildLogs)
-            else buildLogs.push({ level, log })
-          },
-          resolve: {
-            ..._entry.resolve,
-            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfig,
-          },
-          define: _entry.define,
-        })
-        await bundle.write({
-          file: output,
-          minify: _entry.minify,
-          format: _entry.format,
-          banner: _entry.banner,
-          footer: _entry.footer,
-          intro: _entry.intro,
-          outro: _entry.outro,
-          name: _entry.name,
-          globals: _entry.globals,
-          extend: _entry.extend,
-          plugins: _entry.paths ? [outputPaths(_entry.paths)] : undefined,
-        })
+        const bundle = await rolldown(entryInput)
+        if (isChunk) await bundle.write(entryOutput)
+        else {
+          const generated = await bundle.generate(entryOutput)
+          await write(outputResolvePath, generated.output[0].code)
+        }
 
-        const stats = await stat(output)
+        const stats = await stat(outputResolvePath)
 
         entryStats.size = stats.size
         entryStats.buildTime = Date.now() - entryStart
@@ -131,116 +162,39 @@ export async function build(options: Options): Promise<BuildStats> {
 
         logEntryStats(entryStats)
 
-        await hooks?.['build:entry:end']?.(_entry, entryStats)
-      }
-
-      if (entry.dts) {
-        const buildLogs: BuildLogs[] = []
-
-        const _entry = {
-          ...entry,
-          output:
-            entry.output ||
-            getOutputPath(outDir, entry.dts, { extension: 'dts' }),
-          externals: entry.externals || options.externals!,
-          format: entry.format || 'esm',
-          plugins: [dtsPlugin({ ...entry.dtsPlugin, emitDtsOnly: true })],
-        }
-
-        const input = resolve(cwdir, _entry.dts)
-        const output = resolve(cwdir, _entry.output)
-
-        const entryStats: BuildEntryStats = {
-          cwd: cwdir,
-          path: _entry.output,
-          size: 0,
-          buildTime: entryStart,
-          format: 'dts',
-          logs: buildLogs,
-        }
-
-        await hooks?.['build:entry:start']?.(_entry, entryStats)
-
-        const bundle = await rolldown({
-          input,
-          external: _entry.externals,
-          plugins: _entry.plugins,
-          onLog: (level, log, handler) => {
-            if (_entry.onLog) _entry.onLog(level, log, handler, buildLogs)
-            else buildLogs.push({ level, log })
-          },
-          resolve: {
-            ..._entry.resolve,
-            tsconfigFilename: _entry.resolve?.tsconfigFilename || tsconfig,
-          },
-          define: _entry.define,
-        })
-        const generated = await bundle.generate({
-          format: _entry.format,
-          banner: _entry.banner,
-          footer: _entry.footer,
-          intro: _entry.intro,
-          outro: _entry.outro,
-          name: _entry.name,
-          globals: _entry.globals,
-          extend: _entry.extend,
-          plugins: _entry.paths ? [outputPaths(_entry.paths)] : undefined,
-        })
-        await write(_entry.output, generated.output[0].code)
-
-        const stats = await stat(output)
-
-        entryStats.size = stats.size
-        entryStats.buildTime = Date.now() - entryStart
-        entryStats.logs = buildLogs
-
-        buildStats.files.push(entryStats)
-        buildStats.size = buildStats.size + stats.size
-
-        logEntryStats(entryStats)
-
-        await hooks?.['build:entry:end']?.(_entry, entryStats)
+        await hooks?.['build:entry:end']?.(entryOptions, entryStats)
       }
 
       if (entry.copy) {
-        const outputPath = getOutputPath(outDir, entry.copy, {
-          extension: 'original',
-        })
+        const inputResolvePath = resolve(cwdir, entry.copy)
+        const outputRawPath =
+          parseOutputPath(entry.output) ||
+          getOutputPath(outDir, entry.copy, {
+            extension: 'original',
+          })
+        const outputResolvePath = resolve(cwdir, outputRawPath)
 
-        const _entry = {
-          input: entry.copy,
-          output: entry.output || outputPath,
-        }
-
-        const input = resolve(cwdir, _entry.input)
-        const output = resolve(cwdir, _entry.output)
-
-        await copy(input, output, {
+        await copy(inputResolvePath, outputResolvePath, {
           recursive: entry.recursive || true,
           filter: entry.filter,
         }).catch(error)
 
-        const stats = await stat(output)
+        const stats = await stat(outputResolvePath)
         let totalSize = 0
 
         if (!stats.isDirectory()) totalSize = stats.size
         else {
-          const files = await readdir(output)
+          const files = await readdir(outputResolvePath)
           for (const file of files) {
-            const filePath = resolve(output, file)
+            const filePath = resolve(outputResolvePath, file)
             const fileStat = await stat(filePath)
             totalSize = totalSize + fileStat.size
           }
         }
 
-        const parseOutput = (path: string): string => {
-          if (path.startsWith('./')) return path
-          else return `./${path}`
-        }
-
         const entryStats: BuildEntryStats = {
           cwd: cwdir,
-          path: parseOutput(_entry.output),
+          path: outputRawPath,
           size: totalSize,
           buildTime: Date.now() - entryStart,
           format: 'copy',
@@ -254,13 +208,16 @@ export async function build(options: Options): Promise<BuildStats> {
       }
 
       if (entry.template && entry.output) {
-        await write(entry.output, entry.template)
+        const outputRawPath = parseOutputPath(entry.output)!
+        const outputResolvePath = resolve(cwdir, outputRawPath)
 
-        const stats = await stat(resolve(cwdir, entry.output))
+        await write(outputResolvePath, entry.template)
+
+        const stats = await stat(outputResolvePath)
 
         const entryStats: BuildEntryStats = {
           cwd: cwdir,
-          path: entry.output,
+          path: outputRawPath,
           size: stats.size,
           buildTime: Date.now() - entryStart,
           format: 'tmp',

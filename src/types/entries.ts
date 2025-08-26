@@ -90,11 +90,25 @@ export interface EntryBase {
    */
   define?: InputOptions['define']
   /**
+   * Specifies Rolldown `inject` options.
+   *
+   * @default undefined
+   */
+  inject?: InputOptions['inject']
+  /**
    * Specifies Rolldown plugins.
    *
    * @default undefined
    */
   plugins?: RolldownPluginOption
+  /**
+   * Specifies the path to the `tsconfig` file.
+   *
+   * By default, if the file `tsconfig.json` exists in the project root, it will be used as the default config file.
+   *
+   * @default undefined
+   */
+  tsconfig?: InputOptions['tsconfig']
 }
 
 export interface EntryChunk extends EntryBase {
@@ -154,11 +168,16 @@ export interface EntryChunk extends EntryBase {
    */
   extend?: OutputOptions['extend']
   /**
-   * Minifies the generated code if enabled.
+   * Controls code minification.
+   *
+   * - `true`: Enable full minification including code compression and dead code elimination.
+   * - `false`: Disable minification (default).
+   * - `'dce-only'`: Only perform dead code elimination without code compression.
+   * - `MinifyOptions`: Fine-grained control over minification settings.
    *
    * @default undefined
    */
-  minify?: boolean
+  minify?: OutputOptions['minify']
 
   // Mutually exclusive props
   // dts

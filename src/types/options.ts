@@ -1,5 +1,6 @@
 import type { EntryOptions } from './entries'
 import type { HooksOptions } from './hooks'
+import type { OutputOptions } from 'rolldown'
 
 export interface Options {
   /**
@@ -27,7 +28,7 @@ export interface Options {
    *
    * ```ts
    * export default defineConfig({
-   *   outDir: 'output',
+   *   outDir: './output',
    * })
    * ```
    *
@@ -72,7 +73,12 @@ export interface Options {
    */
   hooks?: HooksOptions
   /**
-   * Specifies the minification for all `chunk` entries.
+   * Controls code minification for all `chunk` entries.
+   *
+   * - `true`: Enable full minification including code compression and dead code elimination.
+   * - `false`: Disable minification (default).
+   * - `'dce-only'`: Only perform dead code elimination without code compression.
+   * - `MinifyOptions`: Fine-grained control over minification settings.
    *
    * @example
    *
@@ -97,7 +103,7 @@ export interface Options {
    *
    * @default undefined
    */
-  minify?: boolean
+  minify?: OutputOptions['minify']
   /**
    * Specifies the path to the project root (current working directory).
    *
