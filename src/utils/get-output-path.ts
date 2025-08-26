@@ -28,3 +28,9 @@ export function getOutputPath(
     ? output
     : `./${output}`
 }
+
+export function parseOutputPath(path?: string): string | undefined {
+  if (!path) return
+  if (path.startsWith('./')) return path
+  else return `./${path}`
+}
