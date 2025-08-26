@@ -27,7 +27,7 @@ export async function loadConfig(
     input: resolve(cwd, filePath),
     write: false,
     external: (id) => !(isAbsolute(id) || /^(\.|@\/|~\/)/.test(id)),
-    resolve: { tsconfigFilename: defaults.tsconfig },
+    tsconfig: defaults.tsconfig,
     output: { format: 'esm' },
   })
   const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.mjs')
