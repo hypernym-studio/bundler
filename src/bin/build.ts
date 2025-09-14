@@ -31,7 +31,7 @@ function logEntryStats(stats: BuildEntryStats): void {
   const outputLength = output.length + 2
 
   cl(
-    '▸',
+    dim('+'),
     format.padEnd(5),
     output.padEnd(outputLength),
     dim(`[${formatBytes(stats.size)}, ${formatMs(stats.buildTime)}]`),

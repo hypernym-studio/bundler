@@ -13,8 +13,8 @@ export interface Options {
    * ```ts
    * export default defineConfig({
    *   entries: [
-   *     { input: './src/index.ts' }, // outputs './dist/index.mjs'
-   *     { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
+   *     { input: './src/index.ts' }, // outputs './dist/index.js'
+   *     { dts: './src/types.ts' }, // outputs './dist/types.d.ts'
    *     // ...
    *   ]
    * })

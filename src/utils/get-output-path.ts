@@ -16,7 +16,7 @@ export function getOutputPath(
     let newExt = ''
 
     if (esm.includes(ext)) {
-      newExt = extension === 'dts' ? '.d.mts' : '.mjs'
+      newExt = extension === 'dts' ? '.d.ts' : '.js'
     } else if (legacy.includes(ext)) {
       newExt = extension === 'dts' ? '.d.cts' : '.cjs'
     }

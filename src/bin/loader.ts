@@ -30,7 +30,7 @@ export async function loadConfig(
     tsconfig: defaults.tsconfig,
     output: { format: 'esm' },
   })
-  const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.mjs')
+  const tempConfig = resolve(cwd, 'node_modules/.hypernym/bundler/config.js')
   await write(tempConfig, result.output[0].code)
 
   const config: Options = (await import(tempConfig)).default

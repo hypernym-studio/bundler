@@ -120,7 +120,7 @@ export interface EntryChunk extends EntryBase {
    * ```ts
    * export default defineConfig({
    *   entries: [
-   *     { input: './src/index.ts' }, // outputs './dist/index.mjs'
+   *     { input: './src/index.ts' }, // outputs './dist/index.js'
    *   ]
    * })
    * ```
@@ -200,7 +200,7 @@ export interface EntryDts extends EntryBase {
    * ```ts
    * export default defineConfig({
    *   entries: [
-   *     { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
+   *     { dts: './src/types.ts' }, // outputs './dist/types.d.ts'
    *   ]
    * })
    * ```
