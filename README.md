@@ -57,7 +57,7 @@ export default defineConfig({
     { dts: './src/types/index.ts' },
     {
       input: './src/utils/index.ts',
-      output: './dist/utils/utils.min.mjs',
+      output: './dist/utils/utils.min.js',
       minify: true,
     },
     // ...
@@ -107,7 +107,7 @@ npx hyperbundler --config hyper.config.ts
 
 During transformation, file formats are automatically resolved, and in most cases, no additional configuration is required.
 
-The default module environment for generated files is `esm`, which means output files will have a `.mjs` extension unless otherwise specified. For TypeScript declarations, the corresponding extension will be `.d.mts`.
+The default module environment for generated files is `esm`, which means output files will have a `.js` extension unless otherwise specified. For TypeScript declarations, the corresponding extension will be `.d.ts`.
 
 Formats can also be explicitly specified for each entry, if needed.
 
@@ -115,18 +115,18 @@ Formats can also be explicitly specified for each entry, if needed.
 
 Default transformation behavior for all `chunk` entries:
 
-- `./srcDir/file.js` → `./outDir/file.mjs`
-- `./srcDir/file.mjs` → `./outDir/file.mjs`
+- `./srcDir/file.js` → `./outDir/file.js`
+- `./srcDir/file.mjs` → `./outDir/file.js`
 - `./srcDir/file.cjs` → `./outDir/file.cjs`
-- `./srcDir/file.ts` → `./outDir/file.mjs`
-- `./srcDir/file.mts` → `./outDir/file.mjs`
+- `./srcDir/file.ts` → `./outDir/file.js`
+- `./srcDir/file.mts` → `./outDir/file.js`
 - `./srcDir/file.cts` → `./outDir/file.cjs`
 
 ### Declarations
 
 Default transformation behavior for all `dts` entries:
 
-- `./srcDir/file.ts` → `./outDir/file.d.mts`
+- `./srcDir/file.ts` → `./outDir/file.d.ts`
 
 ## Options
 
@@ -147,8 +147,8 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    { input: './src/index.ts' }, // outputs './dist/index.mjs'
-    { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
+    { input: './src/index.ts' }, // outputs './dist/index.js'
+    { dts: './src/types.ts' }, // outputs './dist/types.d.ts'
     // ...
   ],
 })
@@ -165,7 +165,7 @@ import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    { input: './src/index.ts' }, // outputs './dist/index.mjs'
+    { input: './src/index.ts' }, // outputs './dist/index.js'
     {
       input: './src/index.ts',
       output: './out/index.js', // outputs './out/index.js'
@@ -176,14 +176,14 @@ export default defineConfig({
 
 ### Entry Dts
 
-Builds TypeScript `declaration` files (`.d.mts`) for production.
+Builds TypeScript `declaration` files (`.d.ts`) for production.
 
 ```ts
 import { defineConfig } from '@hypernym/bundler'
 
 export default defineConfig({
   entries: [
-    { dts: './src/types.ts' }, // outputs './dist/types.d.mts'
+    { dts: './src/types.ts' }, // outputs './dist/types.d.ts'
     {
       dts: './src/types.ts',
       output: './out/types.d.ts', // outputs './out/types.d.ts'
@@ -528,10 +528,10 @@ Specifies the path to the `bundler` custom config file.
 
 ```sh
 # pnpm
-pnpm hyperbundler --config hyper.config.mjs
+pnpm hyperbundler --config hyper.config.js
 
 # npm
-npx hyperbundler --config hyper.config.mjs
+npx hyperbundler --config hyper.config.js
 ```
 
 ### cwd
