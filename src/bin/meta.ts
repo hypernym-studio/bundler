@@ -1,2 +1,2 @@
 export const name = `Hyperbundler`
-export const version = `__version__`
+export const version = `__version`

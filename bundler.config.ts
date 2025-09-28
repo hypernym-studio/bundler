@@ -25,7 +25,7 @@ export default defineConfig({
       input: './src/bin/index.ts',
       externals: [...externals, './build'],
       paths: [{ find: './build', replacement: '../build/index.js' }],
-      plugins: [replacePlugin({ __version__: version })],
+      plugins: [replacePlugin({ __version: version })],
     },
   ],
 })
