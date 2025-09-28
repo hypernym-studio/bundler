@@ -65,15 +65,15 @@
     "@hypernym/args": "^0.3.3",
     "@hypernym/colors": "^1.0.5",
     "@hypernym/utils": "^3.4.5",
-    "rolldown": "^1.0.0-beta.37",
-    "rolldown-plugin-dts": "^0.16.5"
+    "rolldown": "^1.0.0-beta.40",
+    "rolldown-plugin-dts": "^0.16.9"
   },
   "devDependencies": {
-    "@hypernym/eslint-config": "^3.6.3",
-    "@hypernym/prettier-config": "^3.2.6",
+    "@hypernym/eslint-config": "^3.6.4",
+    "@hypernym/prettier-config": "^3.2.7",
     "@hypernym/tsconfig": "^2.6.2",
-    "@types/node": "^24.4.0",
-    "eslint": "^9.35.0",
+    "@types/node": "^24.5.2",
+    "eslint": "^9.36.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2"
   }
