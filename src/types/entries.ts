@@ -88,13 +88,13 @@ export interface EntryBase {
    *
    * @default undefined
    */
-  define?: InputOptions['define']
+  define?: NonNullable<InputOptions['transform']>['define']
   /**
    * Specifies Rolldown `inject` options.
    *
    * @default undefined
    */
-  inject?: InputOptions['inject']
+  inject?: NonNullable<InputOptions['transform']>['inject']
   /**
    * Specifies Rolldown plugins.
    *
