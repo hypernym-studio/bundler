@@ -97,15 +97,22 @@ export async function build(options: Options): Promise<BuildStats> {
           plugins: isChunk
             ? entry.plugins
             : entry.plugins || [
-                dtsPlugin({ ...entry.dtsPlugin, emitDtsOnly: true }),
+                dtsPlugin({
+                  ...entry.dtsPlugin,
+                  emitDtsOnly: true,
+                  banner: entry.banner,
+                  footer: entry.footer,
+                }),
               ],
           onLog: (level, log, handler) => {
             if (entry.onLog) entry.onLog(level, log, handler, buildLogs)
             else buildLogs.push({ level, log })
           },
           resolve: entry.resolve,
-          define: entry.define,
-          inject: entry.inject,
+          transform: {
+            define: entry.define,
+            inject: entry.inject,
+          },
           tsconfig: entry.tsconfig || tsconfig,
         } satisfies InputOptions
 
