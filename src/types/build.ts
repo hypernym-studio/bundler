@@ -57,7 +57,8 @@ type PickEntryChunkOptions = 'input' | 'name' | 'globals' | 'extend' | 'minify'
 type PickEntryDtsOptions = 'dts' | 'dtsPlugin'
 
 export interface BuildEntryOptions
-  extends EntryBase,
+  extends
+    EntryBase,
     Partial<Pick<EntryChunk, PickEntryChunkOptions>>,
     Partial<Pick<EntryDts, PickEntryDtsOptions>> {
   /**
