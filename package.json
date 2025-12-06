@@ -65,16 +65,16 @@
     "@hypernym/args": "^0.3.4",
     "@hypernym/colors": "^1.0.6",
     "@hypernym/utils": "^3.4.6",
-    "rolldown": "^1.0.0-beta.50",
-    "rolldown-plugin-dts": "^0.17.7"
+    "rolldown": "^1.0.0-beta.53",
+    "rolldown-plugin-dts": "^0.18.3"
   },
   "devDependencies": {
-    "@hypernym/eslint-config": "^3.6.5",
-    "@hypernym/prettier-config": "^3.2.9",
-    "@hypernym/tsconfig": "^2.6.3",
+    "@hypernym/eslint-config": "^3.6.6",
+    "@hypernym/prettier-config": "^3.2.10",
+    "@hypernym/tsconfig": "^2.6.4",
     "@types/node": "^24.10.1",
     "eslint": "^9.39.1",
-    "prettier": "^3.6.2",
+    "prettier": "^3.7.4",
     "typescript": "^5.9.3"
   }
 }
