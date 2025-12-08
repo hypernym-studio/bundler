@@ -124,8 +124,8 @@ export async function build(options: Options): Promise<BuildStats> {
               : minify
             : undefined,
           format,
-          banner: entry.banner,
-          footer: entry.footer,
+          banner: isChunk ? entry.banner : undefined,
+          footer: isChunk ? entry.footer : undefined,
           intro: entry.intro,
           outro: entry.outro,
           name: entry.name,
