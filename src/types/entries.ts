@@ -49,11 +49,23 @@ export interface EntryBase {
    */
   banner?: OutputOptions['banner']
   /**
+   * Specifies the string to be inserted at the beginning of the module after minification
+   *
+   * @default undefined
+   */
+  postBanner?: OutputOptions['postBanner']
+  /**
    * Specifies the string to be inserted at the end of the module.
    *
    * @default undefined
    */
   footer?: OutputOptions['footer']
+  /**
+   * Specifies the string to be inserted at the end of the module after minification.
+   *
+   * @default undefined
+   */
+  postFooter?: OutputOptions['postFooter']
   /**
    * Specifies the code at the beginning that goes inside any _format-specific_ wrapper.
    *

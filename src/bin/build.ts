@@ -100,8 +100,6 @@ export async function build(options: Options): Promise<BuildStats> {
                 dtsPlugin({
                   ...entry.dtsPlugin,
                   emitDtsOnly: true,
-                  banner: entry.banner,
-                  footer: entry.footer,
                 }),
               ],
           onLog: (level, log, handler) => {
@@ -124,8 +122,10 @@ export async function build(options: Options): Promise<BuildStats> {
               : minify
             : undefined,
           format,
-          banner: isChunk ? entry.banner : undefined,
-          footer: isChunk ? entry.footer : undefined,
+          banner: entry.banner,
+          postBanner: entry.postBanner,
+          footer: entry.footer,
+          postFooter: entry.postFooter,
           intro: entry.intro,
           outro: entry.outro,
           name: entry.name,
