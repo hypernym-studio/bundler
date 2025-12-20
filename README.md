@@ -25,8 +25,8 @@
 - Provides a Powerful Hooking System
 - Exports Fully Optimized Code
 - Follows Modern Practice
-- Super Easy to Use
-- API-Friendly
+- Written in TypeScript
+- API Friendly
 
 ## Quick Start
 
@@ -128,11 +128,7 @@ Default transformation behavior for all `dts` entries:
 
 - `./srcDir/file.ts` → `./outDir/file.d.ts`
 
-## Options
-
-All options come with descriptions and examples. As you type, you’ll get suggestions and can see quick info by hovering over any property.
-
-### entries
+## entries
 
 - Type: `EntryOptions[]`
 
@@ -154,7 +150,7 @@ export default defineConfig({
 })
 ```
 
-### Entry Chunk
+## input
 
 Automatically transforms `chunks` for production.
 
@@ -174,7 +170,7 @@ export default defineConfig({
 })
 ```
 
-### Entry Dts
+## dts
 
 Builds TypeScript `declaration` files (`.d.ts`) for production.
 
@@ -192,7 +188,7 @@ export default defineConfig({
 })
 ```
 
-### Entry Copy
+## copy
 
 Copies either a single `file` or an entire `directory` structure from the source to the destination, including all subdirectories and files.
 
@@ -216,14 +212,14 @@ export default defineConfig({
     },
     {
       // copies the entire directory
-      input: './src/path/srcdir',
+      copy: './src/path/srcdir',
       output: './dist/outdir',
     },
   ],
 })
 ```
 
-### Entry Template
+## template
 
 Specifies the content of the `template` file.
 
@@ -245,7 +241,7 @@ export default defineConfig({
 })
 ```
 
-### outDir
+## outDir
 
 - Type: `string | undefined`
 - Default: `dist`
@@ -262,7 +258,7 @@ export default defineConfig({
 })
 ```
 
-### externals
+## externals
 
 - Type: `(string | RegExp)[] | undefined`
 - Default: `[/^node:/, /^@types/, /^@rollup/, /^@rolldown/, /^@hypernym/, /^rollup/, /^rolldown/, ...pkg.dependencies]`
@@ -294,7 +290,7 @@ export default defineConfig({
 })
 ```
 
-### minify
+## minify
 
 - Type: `boolean | 'dce-only' | MinifyOptions | undefined`
 - Default: `undefined`
