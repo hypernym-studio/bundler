@@ -104,7 +104,9 @@ export async function build(options: Options): Promise<BuildStats> {
               ],
           onLog: (level, log, handler) => {
             if (entry.onLog) entry.onLog(level, log, handler, buildLogs)
-            else buildLogs.push({ level, log })
+            else if (log.code !== 'PLUGIN_TIMINGS') {
+              buildLogs.push({ level, log })
+            }
           },
           resolve: entry.resolve,
           transform: {
