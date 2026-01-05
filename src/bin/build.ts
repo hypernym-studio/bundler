@@ -102,11 +102,10 @@ export async function build(options: Options): Promise<BuildStats> {
                   emitDtsOnly: true,
                 }),
               ],
+          checks: { pluginTimings: false },
           onLog: (level, log, handler) => {
             if (entry.onLog) entry.onLog(level, log, handler, buildLogs)
-            else if (log.code !== 'PLUGIN_TIMINGS') {
-              buildLogs.push({ level, log })
-            }
+            else buildLogs.push({ level, log })
           },
           resolve: entry.resolve,
           transform: {
