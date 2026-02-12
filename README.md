@@ -297,10 +297,10 @@ export default defineConfig({
 
 Controls code minification for all `chunk` entries.
 
-- `true`: Enable full minification including code compression and dead code elimination.
-- `false`: Disable minification (default).
-- `'dce-only'`: Only perform dead code elimination without code compression.
-- `MinifyOptions`: Fine-grained control over minification settings.
+- `true` - Enable full minification including code compression and dead code elimination.
+- `false` - Disable minification (default).
+- `'dce-only'` - Only perform dead code elimination without code compression.
+- `MinifyOptions` - Fine-grained control over minification settings.
 
 ```ts
 // bundler.config.ts
@@ -322,6 +322,30 @@ export default defineConfig({
       minify: true,
     },
   ],
+})
+```
+
+## comments
+
+- Type: `boolean | CommentsOptions | undefined`
+- Default: `{ legal: true, annotation: true, jsdoc: false }`
+
+Specifies which comments are preserved in the output.
+
+- `true` - Preserve legal, annotation, and JSDoc comments.
+- `false` - Strip all comments.
+- `object` - Granular control over comment categories:
+  - `legal` - `@license`, `@preserve`, `//!`, `/*!`.
+  - `annotation` - `@__PURE__`, `@__NO_SIDE_EFFECTS__`, `@vite-ignore`.
+  - `jsdoc` - JSDoc comments.
+
+```ts
+// bundler.config.ts
+
+import { defineConfig } from '@hypernym/bundler'
+
+export default defineConfig({
+  comments: true,
 })
 ```
 
