@@ -75,10 +75,10 @@ export interface Options {
   /**
    * Controls code minification for all `chunk` entries.
    *
-   * - `true`: Enable full minification including code compression and dead code elimination.
-   * - `false`: Disable minification (default).
-   * - `'dce-only'`: Only perform dead code elimination without code compression.
-   * - `MinifyOptions`: Fine-grained control over minification settings.
+   * - `true` - Enable full minification including code compression and dead code elimination.
+   * - `false` - Disable minification (default).
+   * - `'dce-only'` - Only perform dead code elimination without code compression.
+   * - `MinifyOptions` - Fine-grained control over minification settings.
    *
    * @example
    *
@@ -137,12 +137,13 @@ export interface Options {
   /**
    * Specifies which comments are preserved in the output.
    *
-   * - `true`: Preserve legal, annotation, and JSDoc comments (default)-
-   * - `false`: Strip all comments-
-   * - Object: Granular control over comment categories:
-   *   - `legal`: `@license`, `@preserve`, `//!`, `/*!`.
-   *   - `annotation`: `@__PURE__`, `@__NO_SIDE_EFFECTS__`, `@vite-ignore`.
-   *   - `jsdoc`: JSDoc comments.
+   * @example
+   *
+   * ```ts
+   * export default defineConfig({
+   *   comments: true,
+   * })
+   * ```
    *
    * @default { legal: true, annotation: true, jsdoc: false }
    */
