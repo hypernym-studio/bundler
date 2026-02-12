@@ -58,6 +58,7 @@ export async function build(options: Options): Promise<BuildStats> {
     tsconfig,
     hooks,
     minify,
+    comments,
   } = options
 
   let start = 0
@@ -133,6 +134,12 @@ export async function build(options: Options): Promise<BuildStats> {
           globals: entry.globals,
           extend: entry.extend,
           plugins: entry.paths ? [outputPaths(entry.paths)] : undefined,
+          comments: entry.comments ||
+            comments || {
+              legal: true,
+              annotation: true,
+              jsdoc: false,
+            },
         } satisfies OutputOptions
 
         const entryOptions = {

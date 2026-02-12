@@ -134,4 +134,17 @@ export interface Options {
    * @default undefined
    */
   tsconfig?: string
+  /**
+   * Specifies which comments are preserved in the output.
+   *
+   * - `true`: Preserve legal, annotation, and JSDoc comments (default)-
+   * - `false`: Strip all comments-
+   * - Object: Granular control over comment categories:
+   *   - `legal`: `@license`, `@preserve`, `//!`, `/*!`.
+   *   - `annotation`: `@__PURE__`, `@__NO_SIDE_EFFECTS__`, `@vite-ignore`.
+   *   - `jsdoc`: JSDoc comments.
+   *
+   * @default { legal: true, annotation: true, jsdoc: false }
+   */
+  comments?: OutputOptions['comments']
 }
