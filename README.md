@@ -4,11 +4,11 @@
 
 <p align="center">
   <a href="https://github.com/hypernym-studio/bundler">Repository</a>
-  <span>✦</span>
+  <span>|</span>
   <a href="https://www.npmjs.com/package/@hypernym/bundler">Package</a>
-  <span>✦</span>
+  <span>|</span>
   <a href="https://github.com/hypernym-studio/bundler/releases">Releases</a>
-  <span>✦</span>
+  <span>|</span>
   <a href="https://github.com/hypernym-studio/bundler/discussions">Discussions</a>
 </p>
 
