@@ -64,19 +64,20 @@
     }
   },
   "dependencies": {
-    "@hypernym/args": "^0.3.6",
-    "@hypernym/colors": "^1.0.7",
-    "@hypernym/utils": "^3.4.8",
-    "rolldown": "^1.0.0-rc.12",
-    "rolldown-plugin-dts": "^0.23.2"
+    "@hypernym/args": "^0.3.7",
+    "@hypernym/colors": "^1.0.8",
+    "@hypernym/utils": "^3.4.9",
+    "rolldown": "^1.0.3",
+    "rolldown-plugin-dts": "^0.25.2"
   },
   "devDependencies": {
-    "@hypernym/changelog": "^0.1.1",
+    "@hypernym/changelog": "^0.3.0",
+    "@hypernym/oxfmt-config": "^0.1.1",
     "@hypernym/oxlint-config": "^0.1.0",
-    "@hypernym/tsconfig": "^2.7.0",
-    "@types/node": "^25.5.0",
-    "oxfmt": "^0.43.0",
-    "oxlint": "^1.58.0",
+    "@hypernym/tsconfig": "^2.7.2",
+    "@types/node": "^25.9.1",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
     "typescript": "^5.9.3"
   }
 }
